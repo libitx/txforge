@@ -1,0 +1,9 @@
+.DS_Store
+.env
+
+dist
+
+node_modules
+test/dummy
+
+yarn-*.log
