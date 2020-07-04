@@ -8,55 +8,66 @@ import {
   Tx
 } from 'bsv'
 import Cast from './cast'
-import p2pkh from './casts/p2pkh'
+import { p2pkh } from './casts'
 
 // Constants
 const DUST_LIMIT = 546
 
-// Default miner rates
-const minerRates = {
-  data: 0.5,
-  standard: 0.5
+// Default Forge options
+const defaults = {
+  debug: false,
+  rates: {
+    data: 0.5,
+    standard: 0.5
+  }
 }
 
 /**
- * TODO
+ * Forge transaction builder class.
  */
 class Forge {
   /**
-   * TODO
-   * @param {Object} options
+   * Instantiates a new Forge instance.
+   * 
+   * @param {Object} options Tx options
    * @constructor
    */
-  constructor({inputs, outputs, changeAddress, options} = {}) {
+  constructor({
+    inputs,
+    outputs,
+    changeTo,
+    changeScript,
+    options
+  } = {}) {
     this.tx = new Tx()
     this.inputs = []
     this.outputs = []
     this.options = {
-      debug: false,
+      ...defaults,
       ...options
     }
 
     this.addInput(inputs)
     this.addOutput(outputs)
 
-    if (changeAddress) {
-      this.changeScript = Address.fromString(changeAddress).toTxOutScript()
+    if (changeTo) {
+      this.changeTo = changeTo
+    } else if (changeScript) {
+      this.changeScript = changeScript
     }
 
-    debug.call(this, 'TxForge', {
+    debug.call(this, 'Forge:', {
       inputs: this.inputs,
       outputs: this.outputs
     })
   }
 
   /**
-   * TODO
-   * @param {*} castSchema 
-   * @param {*} txid 
-   * @param {*} vout 
-   * @param {*} txOut 
-   * @param {*} nSequence 
+   * Instantiates a new Cast instance.
+   * 
+   * @param {Object} castSchema Cast schema object
+   * @param {Object} input Input UTXO params
+   * @returns {Cast}
    */
   static cast(castSchema, input) {
     const txid = input.txid,
@@ -70,9 +81,11 @@ class Forge {
   }
 
   /**
-   * TODO
+   * Returns the tx change address.
+   * 
+   * @type {String}
    */
-  get changeAddress() {
+  get changeTo() {
     if (this.changeScript) {
       const pkh = this.changeScript.chunks[2]
       return Address.fromPubKeyHashBuf(pkh.buf).toString()
@@ -80,15 +93,44 @@ class Forge {
   }
 
   /**
-   * TODO
+   * Sets the given address as the change address.
+   * 
+   * @type {String}
    */
-  set changeAddress(address) {
+  set changeTo(address) {
     this.changeScript = Address.fromString(address).toTxOutScript()
   }
 
   /**
-   * TODO
-   * @param {Object} input
+   * The sum of all inputs.
+   * 
+   * @type {Number}
+   */
+  get inputSum() {
+    return this.inputs.reduce((sum, cast) => {
+      return sum + cast.txOut.valueBn.toNumber()
+    }, 0)
+  }
+
+  /**
+   * The sum of all outputs.
+   * 
+   * @type {Number}
+   */
+  get outputSum() {
+    return this.outputs.reduce((sum, txOut) => {
+      return sum + txOut.valueBn.toNumber()
+    }, 0)
+  }
+
+  /**
+   * Adds the given input to the tx.
+   * 
+   * The input should be a Cast instance, otherwise the given params will be
+   * used to instantiate a p2pkh Cast.
+   * 
+   * @param {Cast | Object} input Input Cast or p2pkh UTXO params
+   * @returns {Forge}
    */
   addInput(input = []) {
     if (Array.isArray(input)) {
@@ -109,9 +151,19 @@ class Forge {
   }
 
   /**
-   * TODO
-   * @param {Object} input
-   * @returns {TxForge}
+   * Adds the given output params to the tx.
+   * 
+   * The params object should contain one of the following properties:
+   * 
+   * * `to` - Bitcoin address to create p2pkh output
+   * * `script` - hex encoded output script
+   * * `data` - array of chunks which will be automatically parsed into a script
+   * 
+   * Unless the output is an OP_RETURN data output, the params must contain a
+   * `satoshis` property reflecting the number of satoshis to send.
+   * 
+   * @param {Object} output Output params
+   * @returns {Forge}
    */
   addOutput(output = []) {
     if (Array.isArray(output)) {
@@ -139,34 +191,21 @@ class Forge {
   }
 
   /**
-   * TODO
+   * Builds the transaction on the forge instance.
+   * 
+   * `build()` must be called first before attempting to sign. The scriptSigs
+   * are generate with signatures and other dynamic push datas zeroed out.
+   * 
+   * @returns {Forge}
    */
-  inputSum() {
-    return this.inputs.reduce((sum, cast) => {
-      return sum + cast.txOut.valueBn.toNumber()
-    }, 0)
-  }
-
-  /**
-   * TODO
-   */
-  outputSum() {
-    return this.outputs.reduce((sum, txOut) => {
-      return sum + txOut.valueBn.toNumber()
-    }, 0)
-  }
-
-  /**
-   * TODO
-   */
-  build(buildParams) {
+  build() {
     // Create a new tx
     this.tx = new Tx()
 
-    // Iterate over inputs and add template unlocking scripts
+    // Iterate over inputs and add placeholder scriptSigs
     this.inputs.forEach(cast => {
-      const script = cast.toTemplate()
-      this.tx.addTxIn(cast.txHashBuf, cast.txOutNum, script, this.nSequence)
+      const script = cast.placeholder()
+      this.tx.addTxIn(cast.txHashBuf, cast.txOutNum, script, cast.nSequence)
     })
 
     // Iterate over outputs and add to tx
@@ -176,15 +215,10 @@ class Forge {
       }
       this.tx.addTxOut(txOut)
     })
-
-    // Iterate over inputs again and attempt to build the unlocking script
-    this.inputs.forEach((cast, vin) => {
-      this.buildInput(vin, buildParams)
-    })
     
     // If necessary, add the changeScript
     if (this.changeScript) {
-      let change = this.inputSum() - this.outputSum() - this.estimateFee()
+      let change = this.inputSum - this.outputSum - this.estimateFee()
       
       // If no outputs we dont need to make adjustment for change
       // as it is already factored in to fee estimation
@@ -202,21 +236,65 @@ class Forge {
   }
 
   /**
-   * TODO
-   * @param {Number} vin 
-   * @param {Object} buildParams 
+   * Iterates over the inputs and generates the scriptSig for each TxIn. Must be
+   * called after `build()`.
+   * 
+   * The given `params` will be passed to each Cast instance. For most standard
+   * transactions this is all that is needed. For non-standard transaction types
+   * try calling `signTxIn(vin, params)` on individual inputs.
+   * 
+   * @param {Object} params ScriptSig params
+   * @returns {Forge}
    */
-  buildInput(vin, buildParams) {
-    if (typeof buildParams === 'object' && Object.keys(buildParams).length > 0) {
-      const script = this.inputs[vin].toScript(this, buildParams)
-      this.tx.txIns[vin].setScript(script)
+  sign(params) {
+    if (this.inputs.length !== this.tx.txIns.length) {
+      throw new Error('TX not built. Call `build()` first.')
+    }
+
+    for (let i = 0; i < this.inputs.length; i++) {
+      try {
+        this.signTxIn(i, params)
+      } catch(e) {
+        debug.call(this, 'Forge:', e.message, { vin, params })
+      }
     }
   }
 
   /**
-   * TODO
+   * Generates the scriptSig for the TxIn specified by the given index.
+   * 
+   * The given `params` will be passed to each Cast instance. This is useful for
+   * non-standard transaction types as tailored scriptSig params can be passed
+   * to each Cast instance.
+   * 
+   * @param {Number} vin Input index
+   * @param {Object} params ScriptSig params
    */
-  estimateFee(rates = minerRates) {
+  signTxIn(vin, params) {
+    if (!(
+      this.inputs[vin] &&
+      this.tx.txIns[vin] &&
+      Buffer.compare(this.inputs[vin].txHashBuf, this.tx.txIns[vin].txHashBuf) === 0
+    )) {
+      throw new Error('TX not built. Call `build()` first.')
+    }
+      
+    const script = this.inputs[vin].scriptSig(this, params)
+    this.tx.txIns[vin].setScript(script)
+
+    return this
+  }
+
+  /**
+   * Estimates the fee of the current inputs and outputs.
+   * 
+   * Will use the given miner rates, assuming they are in the Minercraft rates
+   * format. If not given. will use the default rates set on the Forge instance.
+   * 
+   * @param {Object} rates Miner Merchant API rates
+   * @returns {Number}
+   */
+  estimateFee(rates = this.options.rates) {
     const parts = [
       { standard: 4 }, // version
       { standard: 4 }, // locktime

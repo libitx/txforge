@@ -5,31 +5,87 @@ import { p2pkh } from '../src/casts'
 
 
 describe('new Forge()', () => {
+  xit('sets given inputs and outputs')
+  xit('sets given change address')
+  xit('sets given change script')
+  xit('sets given miner rates')
+  xit('enables debug logging')
+})
 
+describe('Forge.cast()', () => {
+  xit('returns a Cast instance')
+  xit('throws error with invalid params')
 })
 
 
-describe('Forge#changeAddress', () => {
+describe('Forge#changeTo', () => {
   let forge1, forge2;
   beforeEach(() => {
     forge1 = new Forge()
-    forge2 = new Forge({ changeAddress: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq' })
+    forge2 = new Forge({ changeTo: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq' })
   })
 
   it('is undefined when no changeScript', () => {
     assert.isUndefined(forge1.changeScript)
-    assert.isUndefined(forge1.changeAddress)
+    assert.isUndefined(forge1.changeTo)
   })
 
   it('returns address when changeScript exists', () => {
     assert.instanceOf(forge2.changeScript, bsv.Script)
-    assert.equal(forge2.changeAddress, '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq')
+    assert.equal(forge2.changeTo, '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq')
   })
 
   it('can be changed with getters and setters', () => {
-    forge1.changeAddress = '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq'
+    forge1.changeTo = '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq'
     assert.instanceOf(forge1.changeScript, bsv.Script)
-    assert.equal(forge1.changeAddress, '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq')
+    assert.equal(forge1.changeTo, '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq')
+  })
+})
+
+
+describe('Forge#inputSum', () => {
+  let forge;
+  beforeEach(() => {
+    forge = new Forge()
+  })
+
+  it('returns 0 when no inputs', () => {
+    assert.equal(forge.inputSum, 0)
+  })
+
+  it('returns sum of all inputs', () => {
+    forge.addInput({
+      txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
+      vout: 0,
+      satoshis: 2000,
+      script: '76a91410bdcba3041b5e5517a58f2e405293c14a7c70c188ac'
+    })
+    forge.addInput({
+      txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
+      vout: 1,
+      satoshis: 555,
+      script: '76a91410bdcba3041b5e5517a58f2e405293c14a7c70c188ac'
+    })
+    assert.equal(forge.inputSum, 2555)
+  })
+})
+
+
+describe('Forge#outputSum', () => {
+  let forge;
+  beforeEach(() => {
+    forge = new Forge()
+  })
+
+  it('returns 0 when no outputs', () => {
+    assert.equal(forge.outputSum, 0)
+  })
+
+  it('returns sum of all outputs', () => {
+    forge.addOutput({ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 50000 })
+    forge.addOutput({ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 5000 })
+    forge.addOutput({ data: ['foo', 'bar', 'baz'] })
+    assert.equal(forge.outputSum, 55000)
   })
 })
 
@@ -102,57 +158,9 @@ describe('Forge#addOutput()', () => {
 })
 
 
-describe('Forge#inputSum()', () => {
-  let forge;
-  beforeEach(() => {
-    forge = new Forge()
-  })
-
-  it('returns 0 when no inputs', () => {
-    assert.equal(forge.inputSum(), 0)
-  })
-
-  it('returns sum of all inputs', () => {
-    forge.addInput({
-      txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
-      vout: 0,
-      satoshis: 2000,
-      script: '76a91410bdcba3041b5e5517a58f2e405293c14a7c70c188ac'
-    })
-    forge.addInput({
-      txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
-      vout: 1,
-      satoshis: 555,
-      script: '76a91410bdcba3041b5e5517a58f2e405293c14a7c70c188ac'
-    })
-    assert.equal(forge.inputSum(), 2555)
-  })
-})
-
-
-describe('Forge#outputSum()', () => {
-  let forge;
-  beforeEach(() => {
-    forge = new Forge()
-  })
-
-  it('returns 0 when no outputs', () => {
-    assert.equal(forge.outputSum(), 0)
-  })
-
-  it('returns sum of all outputs', () => {
-    forge.addOutput({ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 50000 })
-    forge.addOutput({ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 5000 })
-    forge.addOutput({ data: ['foo', 'bar', 'baz'] })
-    assert.equal(forge.outputSum(), 55000)
-  })
-})
-
-
 describe('Forge#build()', () => {
-  let keyPair, forge;
+  let forge;
   beforeEach(() => {
-    keyPair = bsv.KeyPair.fromRandom()
     forge = new Forge()
   })
 
@@ -178,24 +186,36 @@ describe('Forge#build()', () => {
     assert.match(forge.tx.toHex(), /76a914[a-f0-9]{40}88ac/)
     assert.match(forge.tx.toHex(), /006a051234567890/)
   })
+})
 
-  it('builds and signs inputs when build params given', () => {
+
+describe('Forge#sign()', () => {
+  let keyPair, forge;
+  beforeEach(() => {
+    keyPair = bsv.KeyPair.fromRandom()
     const pubKeyHash = bsv.Address.fromPubKey(keyPair.pubKey).hashBuf.toString('hex')
-    forge
-      .addInput({
+    forge = new Forge({
+      inputs: [{
         txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
         vout: 0,
         satoshis: 5000,
         script: '76a914'+ pubKeyHash +'88ac'
-      })
-      .addOutput({
-        to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq',
-        satoshis: 5000
-      })
+      }],
+      outputs: [
+        { to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 5000 }
+      ]
+    })
+  })
+
+  it('builds and signs inputs when build params given', () => {
     forge.build()
     assert.match(forge.tx.toHex(), /(00){73}.*(00){33}/)
-    forge.build({keyPair})
+    forge.sign({keyPair})
     assert.notMatch(forge.tx.toHex(), /(00){73}.*(00){33}/)
+  })
+
+  it('throws an error if build() is not called first', () => {
+    assert.throws(_ => forge.sign({keyPair}), 'TX not built')
   })
 })
 
