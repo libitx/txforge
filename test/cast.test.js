@@ -17,13 +17,13 @@ describe('new Cast() with p2pkh params', () => {
     })
   })
 
-  it('should return a placeholder scriptSig', () => {
+  xit('should return a placeholder scriptSig', () => {
     const script = cast.placeholder()
     assert.equal(script.toBuffer().length, 108)
     assert.match(script.toHex(), /(00){73}.+(00){33}/)
   })
 
-  it('should return estimate input size', () => {
+  xit('should return estimate input size', () => {
     assert.equal(cast.size(), 148)
   })
 

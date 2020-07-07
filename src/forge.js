@@ -1,14 +1,13 @@
 import {
   Address,
   Bn,
-  OpCode,
   Script,
   TxOut,
   VarInt,
   Tx
 } from 'bsv'
 import Cast from './cast'
-import { p2pkh } from './casts'
+import { p2pkh, opReturn } from './casts'
 
 // Constants
 const DUST_LIMIT = 546
@@ -62,23 +61,23 @@ class Forge {
     })
   }
 
-  /**
-   * Instantiates a new Cast instance.
-   * 
-   * @param {Object} castSchema Cast schema object
-   * @param {Object} input Input UTXO params
-   * @returns {Cast}
-   */
-  static cast(castSchema, input) {
-    const txid = input.txid,
-          vout = input.vout || input.outputIndex || input.txOutNum,
-          script = Script.fromHex(input.script),
-          satoshis = input.satoshis || input.amount,
-          satoshisBn = Bn(satoshis),
-          txOut = TxOut.fromProperties(satoshisBn, script)
-
-    return new Cast(castSchema, txid, vout, txOut, input.nSequence)
-  }
+//  /**
+//   * Instantiates a new Cast instance.
+//   * 
+//   * @param {Object} castSchema Cast schema object
+//   * @param {Object} input Input UTXO params
+//   * @returns {Cast}
+//   */
+//  static cast(castSchema, input) {
+//    const txid = input.txid,
+//          vout = input.vout || input.outputIndex || input.txOutNum,
+//          script = Script.fromHex(input.script),
+//          satoshis = input.satoshis || input.amount,
+//          satoshisBn = Bn(satoshis),
+//          txOut = TxOut.fromProperties(satoshisBn, script)
+//
+//    return new Cast(castSchema, txid, vout, txOut, input.nSequence)
+//  }
 
   /**
    * Returns the tx change address.
@@ -107,8 +106,8 @@ class Forge {
    * @type {Number}
    */
   get inputSum() {
-    return this.inputs.reduce((sum, cast) => {
-      return sum + cast.txOut.valueBn.toNumber()
+    return this.inputs.reduce((sum, { txOut }) => {
+      return sum + txOut.valueBn.toNumber()
     }, 0)
   }
 
@@ -118,8 +117,8 @@ class Forge {
    * @type {Number}
    */
   get outputSum() {
-    return this.outputs.reduce((sum, txOut) => {
-      return sum + txOut.valueBn.toNumber()
+    return this.outputs.reduce((sum, { satoshis }) => {
+      return sum + satoshis
     }, 0)
   }
 
@@ -140,11 +139,8 @@ class Forge {
     if (input instanceof Cast) {
       this.inputs.push(input)
     } else {
-      try {
-        this.inputs.push(Forge.cast(p2pkh, input))
-      } catch(e) {
-        throw new Error('Input must be an instance of Cast')
-      }
+      const cast = Cast.unlockingScript(p2pkh, input)
+      this.inputs.push(cast)
     }
 
     return this
@@ -170,23 +166,26 @@ class Forge {
       return output.forEach(o => this.addOutput(o))
     }
 
-    const satoshis = output.satoshis || output.amount || 0,
-          satoshisBn = Bn(satoshis);
-    
-    let script
-    if (output.script) {
-      script = Script.fromHex(output.script)
-    } else if (output.data) {
-      script = dataToScript(output.data)
-    } else if (output.to) {
-      const addr = Address.fromString(output.to)
-      script = new Script().fromPubKeyHash(addr.hashBuf)
+    if (output instanceof Cast) {
+      this.outputs.push(output)
     } else {
-      throw new Error('Invalid TxOut params')
+      const satoshis = output.satoshis || output.amount || 0
+      let cast
+      if (output.script) {
+        // If its already script we can create a fake cast
+        const script = Script.fromHex(output.script)
+        cast = { satoshis, script: _ => script }
+      } else if (output.data) {
+        cast = Cast.lockingScript(opReturn, { satoshis, data: output.data })
+      } else if (output.to) {
+        const address = Address.fromString(output.to)
+        cast = Cast.lockingScript(p2pkh, { satoshis, address })
+      } else {
+        throw new Error('Invalid TxOut params')
+      }
+      this.outputs.push(cast)
     }
 
-    const txOut = TxOut.fromProperties(satoshisBn, script)
-    this.outputs.push(txOut)
     return this
   }
 
@@ -209,11 +208,12 @@ class Forge {
     })
 
     // Iterate over outputs and add to tx
-    this.outputs.forEach(txOut => {
-      if (txOut.valueBn.lte(DUST_LIMIT) && !txOut.script.isOpReturn() && !txOut.script.isSafeDataOut()) {
+    this.outputs.forEach(cast => {
+      const script = cast.script(this, cast.params)
+      if (cast.satoshis < DUST_LIMIT && !(script.isSafeDataOut() || script.isOpReturn())) {
         throw new Error('Cannot create output lesser than dust')
       }
-      this.tx.addTxOut(txOut)
+      this.tx.addTxOut(Bn(cast.satoshis), script)
     })
     
     // If necessary, add the changeScript
@@ -255,7 +255,7 @@ class Forge {
       try {
         this.signTxIn(i, params)
       } catch(e) {
-        debug.call(this, 'Forge:', e.message, { vin, params })
+        debug.call(this, 'Forge:', e.message, { i, params })
       }
     }
   }
@@ -279,7 +279,7 @@ class Forge {
       throw new Error('TX not built. Call `build()` first.')
     }
       
-    const script = this.inputs[vin].scriptSig(this, params)
+    const script = this.inputs[vin].script(this, params)
     this.tx.txIns[vin].setScript(script)
 
     return this
@@ -312,10 +312,13 @@ class Forge {
     }
 
     if (this.outputs.length > 0) {
-      this.outputs.forEach(({ script, scriptVi }) => {
-        const p = {}
-        const type = script.chunks[0].opCodeNum === 0 && script.chunks[1].opCodeNum === 106 ? 'data' : 'standard';
-        p[type] = 8 + scriptVi.buf.length + scriptVi.toNumber()
+      this.outputs.forEach(cast => {
+        const p = {},
+              script = cast.script(this, cast.params),
+              txOut = TxOut.fromProperties(Bn(cast.satoshis), script);
+
+        const type = script.chunks[0].opCodeNum === 0 && script.chunks[1].opCodeNum === 106 ? 'data' : 'standard'
+        p[type] = 8 + txOut.scriptVi.buf.length + txOut.scriptVi.toNumber()
         parts.push(p)
       })
     } else if (this.changeScript) {
@@ -338,29 +341,6 @@ class Forge {
   }
 }
 
-
-// Converts the given array of data chunks into a OP_RETURN output script
-function dataToScript(data) {
-  const script = new Script()
-  script.writeOpCode(OpCode.OP_FALSE)
-  script.writeOpCode(OpCode.OP_RETURN)
-  data.forEach(item => {
-    // Hex string
-    if (typeof item === 'string' && /^0x/i.test(item)) {
-      script.writeBuffer(Buffer.from(item.slice(2), 'hex'))
-    // Opcode number
-    } else if (typeof item === 'number' || item === null) {
-      script.writeOpCode(Number.isInteger(item) ? item : 0)
-    // Opcode
-    } else if (typeof item === 'object' && item.hasOwnProperty('op')) {
-      script.writeOpCode(item.op)
-    // All else
-    } else {
-      script.writeBuffer(Buffer.from(item))
-    }
-  })
-  return script
-}
 
 // Log the given arguments if debug mode enabled
 function debug(...args) {

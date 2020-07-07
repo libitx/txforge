@@ -1,4 +1,9 @@
-import {Script, VarInt} from 'bsv'
+import {
+  Bn,
+  Script,
+  TxOut,
+  VarInt
+} from 'bsv'
 
 /**
  * Cast class
@@ -12,36 +17,59 @@ class Cast {
    * Instantiates a new Cast instance.
    * 
    * @param {Object} cast Cast template object
-   * @param {String} txid UTXO txid
-   * @param {Number} vout UTXO vout
-   * @param {TxOut} txOut UTXO txOut instance
-   * @param {Number} nSequence nSequence number
    * @constructor
    */
-  constructor({template, scriptSig}, txid, txOutNum, txOut, nSequence) {
-    this.txid = txid
-    this.txHashBuf = Buffer.from(txid, 'hex').reverse()
-    this.txOutNum = txOutNum
-    this.txOut = txOut
-    this.nSequence = nSequence
+  constructor({script, template}) {
+    // Set template and script
     this.template = template || []
-
-    if (scriptSig && typeof scriptSig === 'function') {
-      this.scriptSig = scriptSig
+    if (script && typeof script === 'function') {
+      this.script = script
     }
   }
 
   /**
-   * Returns a placeholder scriptSig, with signatures and other dynamic push
-   * datas zeroed out.
-   * 
-   * @returns {Script}
+   * TODO
+   * @param {Object} cast
+   * @param {Number} satoshis
+   * @param {Object} params
    */
-  placeholder() {
-    return this.template.reduce((script, part) => {
-      const buf = Buffer.alloc(part.size)
-      return script.writeBuffer(buf)
-    }, new Script())
+  static lockingScript(cast, params) {
+    requiresAny(params, 'lockingScript', [
+      ['satoshis', 'amount']
+    ])
+
+    const satoshis = params.satoshis || params.amount || 0
+    delete params.satoshis && delete params.amount
+    return new LockingScript(cast.lockingScript, satoshis, params)
+  }
+
+  /**
+   * TODO
+   * @param {Object} cast
+   * @param {Object} params
+   * @constructor
+   */
+  static unlockingScript(cast, params) {
+    requires(params, 'unlockingScript', ['txid', 'script'])
+    requiresAny(params, 'unlockingScript', [
+      ['satoshis', 'amount'],
+      ['vout', 'outputIndex', 'txOutNum']
+    ])
+
+    const txid = params.txid,
+          script = Script.fromHex(params.script),
+          satoshis = params.satoshis || params.amount,
+          satoshisBn = Bn(satoshis),
+          txOut = TxOut.fromProperties(satoshisBn, script),
+          nSequence = params.nSequence
+    
+    let txOutNum
+    ['vout', 'outputIndex', 'txOutNum']
+      .some(attr => {
+        if (typeof params[attr] === 'number') return txOutNum = params[attr]
+      })
+
+    return new UnlockingScript(cast.unlockingScript, txid, txOutNum, txOut, nSequence)
   }
 
   /**
@@ -49,12 +77,12 @@ class Cast {
    * 
    * @returns {Script}
    */
-  scriptSig() {
-    throw new Error('Cast created with no scriptSig() function')
+  script() {
+    throw new Error('Cast created with no script() function')
   }
 
   /**
-   * Returns the estimated size of the scriptSig, based on the Cast template.
+   * Returns the estimated size of the script, based on the Cast template.
    * 
    * @returns {Number}
    */
@@ -71,6 +99,89 @@ class Cast {
       }
       return sum + size
     }, init)
+  }
+}
+
+
+// TODO
+function requires(params, type, attrs) {
+  attrs.forEach(attr => {
+    if (typeof params[attr] === 'undefined')
+      throw new Error(`Cast type '${type}' requires '${attr}' attribute`)
+  })
+}
+
+// TODO
+function requiresAny(params, type, attrs) {
+  attrs.forEach(aliases => {
+    if (aliases.every(attr => typeof params[attr] === 'undefined')) {
+      throw new Error(`Cast type '${type}' requires '${aliases[0]}' attribute`)
+    }
+  })
+}
+
+/**
+ * TODO
+ */
+class LockingScript extends Cast {
+  /**
+   * TODO
+   * @param {Object} cast
+   * @param {Number} satoshis
+   * @param {Object} params
+   */
+  constructor(cast, satoshis, params = {}) {
+    super(cast)
+
+    if (typeof satoshis === 'undefined') {
+      throw new Error('UnlockingScript Cast requires satoshis attribute')
+    }
+
+    this.satoshis = satoshis
+    this.params = params
+  }
+}
+
+/**
+ * TODO
+ */
+class UnlockingScript extends Cast {
+  /**
+   * TODO
+   * @param {Object} cast
+   * @param {String} txid
+   * @param {Number} txOutNum
+   * @param {TxOut} txOut
+   * @param {Number} nSequence
+   */
+  constructor(cast, txid, txOutNum, txOut, nSequence) {
+    super(cast)
+
+    const req = ['txid', 'txOutNum', 'txOut']
+
+    req.forEach(attr => {
+      if (typeof eval(attr) === 'undefined')
+        throw new Error(`UnlockingScript Cast requires '${attr}' attribute`)
+    })
+
+    this.txid = txid
+    this.txHashBuf = Buffer.from(txid, 'hex').reverse()
+    this.txOutNum = txOutNum
+    this.txOut = txOut
+    this.nSequence = nSequence
+  }
+
+  /**
+   * Returns a placeholder script, with signatures and dynamic push datas zeroed
+   * out.
+   * 
+   * @returns {Script}
+   */
+  placeholder() {
+    return this.template.reduce((script, part) => {
+      const buf = Buffer.alloc(part.size)
+      return script.writeBuffer(buf)
+    }, new Script())
   }
 }
 

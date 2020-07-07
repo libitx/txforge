@@ -1,6 +1,7 @@
 import { assert } from 'chai'
 import bsv from 'bsv'
 import Forge from '../src/forge'
+import Cast from '../src/cast'
 import { p2pkh } from '../src/casts'
 
 
@@ -10,11 +11,6 @@ describe('new Forge()', () => {
   xit('sets given change script')
   xit('sets given miner rates')
   xit('enables debug logging')
-})
-
-describe('Forge.cast()', () => {
-  xit('returns a Cast instance')
-  xit('throws error with invalid params')
 })
 
 
@@ -97,7 +93,7 @@ describe('Forge#addInput()', () => {
   })
 
   it('adds a valid cast instance to the tx', () => {
-    const input = Forge.cast(p2pkh, {
+    const input = Cast.unlockingScript(p2pkh, {
       txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
       vout: 0,
       satoshis: 2000,
@@ -118,7 +114,7 @@ describe('Forge#addInput()', () => {
   })
 
   it('throws error with invalid params', () => {
-    assert.throws(_ => forge.addInput({}), 'Input must be an instance of Cast')
+    assert.throws(_ => forge.addInput({}), /^Cast type .+ requires/)
   })
 })
 
