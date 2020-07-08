@@ -6,11 +6,48 @@ import { P2PKH } from '../src/casts'
 
 
 describe('new Forge()', () => {
-  xit('sets given inputs and outputs')
-  xit('sets given change address')
-  xit('sets given change script')
-  xit('sets given miner rates')
-  xit('enables debug logging')
+  it('sets given inputs and outputs', () => {
+    const forge = new Forge({
+      inputs: [{
+        txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
+        vout: 0,
+        satoshis: 2000,
+        script: '76a91410bdcba3041b5e5517a58f2e405293c14a7c70c188ac'
+      }],
+      outputs: [{ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 2000 }]
+    })
+    assert.lengthOf(forge.inputs, 1)
+    assert.lengthOf(forge.outputs, 1)
+  })
+
+  it('sets given change address', () => {
+    const forge = new Forge({
+      changeTo: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq'
+    })
+    assert.equal(forge.changeTo, '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq')
+    assert.instanceOf(forge.changeScript, bsv.Script)
+  })
+
+  it('sets given change script', () => {
+    const forge = new Forge({
+      changeScript: bsv.Address.fromString('1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq').toTxOutScript()
+    })
+    assert.equal(forge.changeTo, '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq')
+    assert.instanceOf(forge.changeScript, bsv.Script)
+  })
+
+  it('sets given miner rates', () => {
+    const forge = new Forge({
+      options: {
+        rates: {
+          data: 0.1,
+          standard: 0.25
+        }
+      }
+    })
+    assert.equal(forge.options.rates.data, 0.1)
+    assert.equal(forge.options.rates.standard, 0.25)
+  })
 })
 
 

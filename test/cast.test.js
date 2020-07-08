@@ -1,40 +1,107 @@
 import { assert } from 'chai'
 import bsv from 'bsv'
-import Forge from '../src/forge'
-import {P2PKH, P2RPH} from '../src/casts'
+import Cast from '../src/cast'
+
+const casting = {
+  template: [ bsv.OpCode.OP_RETURN, { size: 10 }, { size: _ => 10 } ],
+  script(_) { return new bsv.Script() }
+}
 
 
-describe('new Cast() with P2PKH params', () => {
-  let cast, keyPair;
+describe('new Cast()', () => {
+  let cast1, cast2;
   beforeEach(() => {
-    keyPair = bsv.KeyPair.fromRandom()
-    const pubKeyHash = bsv.Address.fromPubKey(keyPair.pubKey).hashBuf.toString('hex')
-    cast = Forge.cast(P2PKH, {
-      txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
-      vout: 0,
-      satoshis: 2000,
-      script: '76a914'+ pubKeyHash +'88ac'
-    })
+    cast1 = new Cast()
+    cast2 = new Cast(casting)
   })
 
-  xit('should return a placeholder scriptSig', () => {
-    const script = cast.placeholder()
-    assert.equal(script.toBuffer().length, 108)
-    assert.match(script.toHex(), /(00){73}.+(00){33}/)
+  it('size() returns 1 when blank cast', () => {
+    assert.equal(cast1.size(), 1)
   })
 
-  xit('should return estimate input size', () => {
-    assert.equal(cast.size(), 148)
+  it('size() calculates size when template given', () => {
+    assert.equal(cast2.size(), 24)
   })
 
-  xit('must return scriptSig with valid params')
-  xit('throws error with invalid scriptSig params')
+  it('script() throws error when blank cast', () => {
+    assert.throws(_ => cast1.script(), 'Cast created with no script() function')
+  })
+
+  it('script() returns a value when callback given', () => {
+    assert.instanceOf(cast2.script(), bsv.Script)
+  })
 })
 
 
-describe('new Cast() with P2RPH params', () => {
-  xit('should return a placeholder scriptSig')
-  xit('should return estimate input size')
-  xit('must return scriptSig with valid params')
-  xit('throws error with invalid scriptSig params')
+describe('Cast.lockingScript()', () => {
+  it('throws error if satoshis not given', () => {
+    assert.throws(_ => {
+      Cast.lockingScript({ lockingScript: casting })
+    }, "Cast type 'lockingScript' requires 'satoshis' param")
+  })
+
+  it('other given params stored on params object', () => {
+    const cast = Cast.lockingScript({ lockingScript: casting }, { satoshis: 5000, foo: 'bar' })
+    assert.deepEqual(cast.params, { foo: 'bar' })
+  })
+})
+
+
+describe('Cast.lockingScript()', () => {
+  const castMod = { lockingScript: casting }
+
+  it('throws error if satoshis not given', () => {
+    assert.throws(_ => {
+      Cast.lockingScript(castMod)
+    }, "Cast type 'lockingScript' requires 'satoshis' param")
+  })
+
+  it('other given params stored on params object', () => {
+    const cast = Cast.lockingScript(castMod, { satoshis: 5000, foo: 'bar' })
+    assert.deepEqual(cast.params, { foo: 'bar' })
+  })
+})
+
+
+describe('Cast.unlockingScript()', () => {
+  const castMod = { unlockingScript: casting }
+
+  it('throws error if required params not given', () => {
+    assert.throws(_ => {
+      Cast.unlockingScript(castMod)
+    }, "Cast type 'unlockingScript' requires 'txid' param")
+    assert.throws(_ => {
+      Cast.unlockingScript(castMod, { txid: '0000' })
+    }, "Cast type 'unlockingScript' requires 'script' param")
+    assert.throws(_ => {
+      Cast.unlockingScript(castMod, { txid: '0000', script: '0000' })
+    }, "Cast type 'unlockingScript' requires 'satoshis' param")
+    assert.throws(_ => {
+      Cast.unlockingScript(castMod, { txid: '0000', script: '0000', satoshis: 5000 })
+    }, "Cast type 'unlockingScript' requires 'vout' param")
+    assert.doesNotThrow(_ => {
+      Cast.unlockingScript(castMod, { txid: '0000', script: '0000', satoshis: 5000, vout: 0 })
+    })
+  })
+
+  it('accepts either satoshis or amount param', () => {
+    const c1 = Cast.unlockingScript(castMod, { txid: '0000', script: '0000', satoshis: 5000, vout: 0 })
+    const c2 = Cast.unlockingScript(castMod, { txid: '0000', script: '0000', amount: 5000, vout: 0 })
+    assert.equal(c1.txOut.valueBn.toNumber(), 5000)
+    assert.equal(c2.txOut.valueBn.toNumber(), 5000)
+  })
+
+  it('accepts either vout or outputIndex or txOutNum param', () => {
+    const c1 = Cast.unlockingScript(castMod, { txid: '0000', script: '0000', satoshis: 5000, vout: 0 })
+    const c2 = Cast.unlockingScript(castMod, { txid: '0000', script: '0000', satoshis: 5000, outputIndex: 0 })
+    const c3 = Cast.unlockingScript(castMod, { txid: '0000', script: '0000', satoshis: 5000, txOutNum: 0 })
+    assert.equal(c1.txOutNum, 0)
+    assert.equal(c2.txOutNum, 0)
+    assert.equal(c3.txOutNum, 0)
+  })
+
+  it('other given params stored on params object', () => {
+    const cast = Cast.unlockingScript(castMod, { txid: '0000', script: '0000', satoshis: 5000, vout: 0, foo: 'bar' })
+    assert.deepEqual(cast.params, { foo: 'bar' })
+  })
 })

@@ -19,7 +19,7 @@ class Cast {
    * @param {Object} cast Cast template object
    * @constructor
    */
-  constructor({script, template}) {
+  constructor({script, template} = {}) {
     // Set template and script
     this.template = template || []
     if (script && typeof script === 'function') {
@@ -33,7 +33,7 @@ class Cast {
    * @param {Number} satoshis
    * @param {Object} params
    */
-  static lockingScript(cast, params) {
+  static lockingScript(cast, params = {}) {
     requiresAny(params, 'lockingScript', [
       ['satoshis', 'amount']
     ])
@@ -49,7 +49,7 @@ class Cast {
    * @param {Object} params
    * @constructor
    */
-  static unlockingScript(cast, params) {
+  static unlockingScript(cast, params = {}) {
     requires(params, 'unlockingScript', ['txid', 'script'])
     requiresAny(params, 'unlockingScript', [
       ['satoshis', 'amount'],
@@ -114,7 +114,7 @@ class Cast {
 function requires(params, type, attrs) {
   attrs.forEach(attr => {
     if (typeof params[attr] === 'undefined')
-      throw new Error(`Cast type '${type}' requires '${attr}' attribute`)
+      throw new Error(`Cast type '${type}' requires '${attr}' param`)
   })
 }
 
@@ -122,7 +122,7 @@ function requires(params, type, attrs) {
 function requiresAny(params, type, attrs) {
   attrs.forEach(aliases => {
     if (aliases.every(attr => typeof params[attr] === 'undefined')) {
-      throw new Error(`Cast type '${type}' requires '${aliases[0]}' attribute`)
+      throw new Error(`Cast type '${type}' requires '${aliases[0]}' param`)
     }
   })
 }
@@ -141,7 +141,7 @@ class LockingScript extends Cast {
     super(cast)
 
     if (typeof satoshis === 'undefined') {
-      throw new Error('UnlockingScript Cast requires satoshis attribute')
+      throw new Error("Cast type 'lockingScript' requires 'satoshis' param")
     }
 
     this.satoshis = satoshis
@@ -175,7 +175,7 @@ class UnlockingScript extends Cast {
 
     req.forEach(attr => {
       if (typeof eval(attr) === 'undefined')
-        throw new Error(`UnlockingScript Cast requires '${attr}' attribute`)
+        throw new Error(`Cast type 'unlockingScript' requires '${attr}' param`)
     })
 
     this.txid = txid
