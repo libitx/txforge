@@ -32,16 +32,20 @@ const opreturn = {
         // Hex string
         if (typeof item === 'string' && /^0x/i.test(item)) {
           script.writeBuffer(Buffer.from(item.slice(2), 'hex'))
+        }
         // Opcode number
-        } else if (typeof item === 'number' || item === null) {
+        else if (typeof item === 'number' || item === null) {
           script.writeOpCode(Number.isInteger(item) ? item : 0)
+        }
         // Opcode
-        } else if (typeof item === 'object' && item.hasOwnProperty('op')) {
+        else if (typeof item === 'object' && item.hasOwnProperty('op')) {
           script.writeOpCode(item.op)
+        }
         // All else
-        } else {
+        else {
           script.writeBuffer(Buffer.from(item))
         }
+        
         return script
       }, script)
     }

@@ -10,7 +10,8 @@ import {
   Sig
 } from 'bsv'
 
-// Patch OpCodes
+// Patch OpCodes until added to bsv2
+// https://github.com/moneybutton/bsv/issues/161
 OpCode.OP_SPLIT = 0x7f
 
 /**

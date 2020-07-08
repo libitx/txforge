@@ -33,11 +33,14 @@ const p2pkh = {
       }
 
       return this.template.reduce((script, part) => {
-        if (part.name === 'pubKeyHash') {
-          script.writeBuffer(address.hashBuf)
-        } else {
-          script.writeOpCode(part)
+        switch (part.name) {
+          case 'pubKeyHash':
+            script.writeBuffer(address.hashBuf)
+            break
+          default:
+            script.writeOpCode(part)
         }
+        
         return script
       }, new Script())
     }
@@ -76,12 +79,16 @@ const p2pkh = {
   
       // Iterrate over template and create scriptSig
       return this.template.reduce((script, part) => {
-        if (part.name === 'sig') {
-          const sig = tx.sign(keyPair, sighashType, vin, txOut.script, txOut.valueBn, flags)
-          script.writeBuffer(sig.toTxFormat())
-        } else if (part.name === 'pubKey') {
-          script.writeBuffer(keyPair.pubKey.toBuffer())
+        switch (part.name) {
+          case 'sig':
+            const sig = tx.sign(keyPair, sighashType, vin, txOut.script, txOut.valueBn, flags)
+            script.writeBuffer(sig.toTxFormat())
+            break
+          case 'pubKey':
+            script.writeBuffer(keyPair.pubKey.toBuffer())
+            break
         }
+        
         return script
       }, new Script())
     }
