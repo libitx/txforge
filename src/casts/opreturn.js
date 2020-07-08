@@ -22,7 +22,7 @@ const opReturn = {
      * @param {*} forge 
      * @param {*} params
      */
-    script(_forge, { data, safe = true }) {
+    script({ data, safe = true }) {
       const script = new Script()
 
       if (safe) script.writeOpCode(OpCode.OP_FALSE)

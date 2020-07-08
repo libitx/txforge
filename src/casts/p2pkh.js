@@ -24,11 +24,10 @@ const p2pkh = {
     ],
 
     /**
-     * 
-     * @param {Forge} forge 
+     * TODO
      * @param {Object} params 
      */
-    script(_forge, { address }) {
+    script({ address }) {
       if (!(address && address.hashBuf)) {
         throw new Error('P2PKH lockingScript requires address')
       }
@@ -49,7 +48,7 @@ const p2pkh = {
    */
   unlockingScript: {
     template: [
-      { name: 'sig', size: 73 },
+      { name: 'sig', size: 72 },
       { name: 'pubKey', size: 33 }
     ],
   

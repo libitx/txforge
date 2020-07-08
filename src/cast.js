@@ -69,7 +69,11 @@ class Cast {
         if (typeof params[attr] === 'number') return txOutNum = params[attr]
       })
 
-    return new UnlockingScript(cast.unlockingScript, txid, txOutNum, txOut, nSequence)
+    delete params.txid && delete params.script
+    delete params.satoshis && delete params.amount
+    delete params.vout && delete params.outputIndex && delete params.txOutNum
+
+    return new UnlockingScript(cast.unlockingScript, txid, txOutNum, txOut, nSequence, params)
   }
 
   /**
@@ -87,8 +91,7 @@ class Cast {
    * @returns {Number}
    */
   size() {
-    const init = 40 // txid, vout, nSquence
-    return this.template.reduce((sum, p) => {
+    const s = this.template.reduce((sum, p) => {
       let size
       if (p.size) {
         size = VarInt.fromNumber(p.size).buf.length + p.size;
@@ -98,7 +101,8 @@ class Cast {
         size = 1
       }
       return sum + size
-    }, init)
+    }, 0)
+    return VarInt.fromNumber(s).buf.length + s
   }
 }
 
@@ -140,6 +144,13 @@ class LockingScript extends Cast {
     this.satoshis = satoshis
     this.params = params
   }
+
+  /**
+   * TODO
+   */
+  size() {
+    return super.size() + 8 // satoshis (8)
+  }
 }
 
 /**
@@ -154,7 +165,7 @@ class UnlockingScript extends Cast {
    * @param {TxOut} txOut
    * @param {Number} nSequence
    */
-  constructor(cast, txid, txOutNum, txOut, nSequence) {
+  constructor(cast, txid, txOutNum, txOut, nSequence, params = {}) {
     super(cast)
 
     const req = ['txid', 'txOutNum', 'txOut']
@@ -169,6 +180,7 @@ class UnlockingScript extends Cast {
     this.txOutNum = txOutNum
     this.txOut = txOut
     this.nSequence = nSequence
+    this.params = params
   }
 
   /**
@@ -182,6 +194,13 @@ class UnlockingScript extends Cast {
       const buf = Buffer.alloc(part.size)
       return script.writeBuffer(buf)
     }, new Script())
+  }
+
+  /**
+   * TODO
+   */
+  size() {
+    return super.size() + 40 // txid (32), vout (4), nSquence (4)
   }
 }
 

@@ -209,7 +209,7 @@ class Forge {
 
     // Iterate over outputs and add to tx
     this.outputs.forEach(cast => {
-      const script = cast.script(this, cast.params)
+      const script = cast.script(cast.params)
       if (cast.satoshis < DUST_LIMIT && !(script.isSafeDataOut() || script.isOpReturn())) {
         throw new Error('Cannot create output lesser than dust')
       }
@@ -278,10 +278,11 @@ class Forge {
     )) {
       throw new Error('TX not built. Call `build()` first.')
     }
-      
-    const script = this.inputs[vin].script(this, params)
-    this.tx.txIns[vin].setScript(script)
 
+    const cast = this.inputs[vin],
+          script = cast.script(this, { ...cast.params, ...params })
+
+    this.tx.txIns[vin].setScript(script)
     return this
   }
 
@@ -314,7 +315,7 @@ class Forge {
     if (this.outputs.length > 0) {
       this.outputs.forEach(cast => {
         const p = {},
-              script = cast.script(this, cast.params),
+              script = cast.script(cast.params),
               txOut = TxOut.fromProperties(Bn(cast.satoshis), script);
 
         const type = script.chunks[0].opCodeNum === 0 && script.chunks[1].opCodeNum === 106 ? 'data' : 'standard'

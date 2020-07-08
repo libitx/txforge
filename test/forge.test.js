@@ -169,7 +169,7 @@ describe('Forge#build()', () => {
     })
     assert.equal(forge.tx.toHex(), '01000000000000000000')
     forge.build()
-    assert.equal(forge.tx.toBuffer().length, 159)
+    assert.equal(forge.tx.toBuffer().length, 158)
   })
 
   it('builds the outputs into the tx', () => {
@@ -205,9 +205,9 @@ describe('Forge#sign()', () => {
 
   it('builds and signs inputs when build params given', () => {
     forge.build()
-    assert.match(forge.tx.toHex(), /(00){73}.*(00){33}/)
+    assert.match(forge.tx.toHex(), /(00){72}.*(00){33}/)
     forge.sign({keyPair})
-    assert.notMatch(forge.tx.toHex(), /(00){73}.*(00){33}/)
+    assert.notMatch(forge.tx.toHex(), /(00){72}.*(00){33}/)
   })
 
   it('throws an error if build() is not called first', () => {
