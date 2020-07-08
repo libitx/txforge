@@ -7,7 +7,7 @@ import {
   Tx
 } from 'bsv'
 import Cast from './cast'
-import { p2pkh, opreturn } from './casts'
+import { P2PKH, OpReturn } from './casts'
 
 // Constants
 const DUST_LIMIT = 546
@@ -139,7 +139,7 @@ class Forge {
     if (input instanceof Cast) {
       this.inputs.push(input)
     } else {
-      const cast = Cast.unlockingScript(p2pkh, input)
+      const cast = Cast.unlockingScript(P2PKH, input)
       this.inputs.push(cast)
     }
 
@@ -176,10 +176,10 @@ class Forge {
         const script = Script.fromHex(output.script)
         cast = { satoshis, script: _ => script }
       } else if (output.data) {
-        cast = Cast.lockingScript(opreturn, { satoshis, data: output.data })
+        cast = Cast.lockingScript(OpReturn, { satoshis, data: output.data })
       } else if (output.to) {
         const address = Address.fromString(output.to)
-        cast = Cast.lockingScript(p2pkh, { satoshis, address })
+        cast = Cast.lockingScript(P2PKH, { satoshis, address })
       } else {
         throw new Error('Invalid TxOut params')
       }

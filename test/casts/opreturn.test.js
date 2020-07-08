@@ -1,13 +1,13 @@
 import { assert } from 'chai'
 import bsv from 'bsv'
 import Cast from '../../src/cast'
-import { opreturn } from '../../src/casts'
+import { OpReturn } from '../../src/casts'
 
 
-describe('opreturn.lockingScript', () => {
+describe('OpReturn.lockingScript', () => {
   let cast;
   beforeEach(() => {
-    cast = Cast.lockingScript(opreturn, { satoshis: 0, data: ['hello world'] })
+    cast = Cast.lockingScript(OpReturn, { satoshis: 0, data: ['hello world'] })
   })
 
   it('template is correct length', () => {
@@ -19,8 +19,8 @@ describe('opreturn.lockingScript', () => {
   })
 
   it('size() correctly handles safe attribute', () => {
-    const cast1 = Cast.lockingScript(opreturn, { satoshis: 0, data: ['hello world'] })
-    const cast2 = Cast.lockingScript(opreturn, { satoshis: 0, data: ['hello world'], safe: false })
+    const cast1 = Cast.lockingScript(OpReturn, { satoshis: 0, data: ['hello world'] })
+    const cast2 = Cast.lockingScript(OpReturn, { satoshis: 0, data: ['hello world'], safe: false })
 
     assert.equal(cast1.size(), 12)
     assert.equal(cast2.size(), 11)

@@ -9,7 +9,7 @@ import {
 /**
  * TODO
  */
-const p2pkh = {
+const P2PKH = {
   /**
    * TODO
    */
@@ -105,4 +105,4 @@ function verifyKeyPair(keyPair, { script }) {
   )
 }
 
-export default p2pkh
+export default P2PKH

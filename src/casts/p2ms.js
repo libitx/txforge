@@ -8,7 +8,7 @@ import {
 /**
  * TODO
  */
-const p2ms = {
+const P2MS = {
   /**
    * TODO
    */
@@ -120,4 +120,4 @@ function verifyKeyPairs(keyPairs, { script }) {
   })
 }
 
-export default p2ms
+export default P2MS

@@ -17,7 +17,7 @@ OpCode.OP_SPLIT = 0x7f
 /**
  * TODO
  */
-const p2rph = {
+const P2RPH = {
   /**
    * TODO
    */
@@ -196,4 +196,4 @@ function getRBuf(kBuf) {
   return r[0]>127 ? Buffer.concat([Buffer.alloc(1), r]) : r;
 }
 
-export default p2rph
+export default P2RPH

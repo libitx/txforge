@@ -6,7 +6,7 @@ import {
 /**
  * TODO
  */
-const opreturn = {
+const OpReturn = {
   /**
    * TODO
    */
@@ -52,4 +52,4 @@ const opreturn = {
   }
 }
 
-export default opreturn
+export default OpReturn

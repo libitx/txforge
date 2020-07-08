@@ -2,16 +2,16 @@ import { assert } from 'chai'
 import bsv from 'bsv'
 import Forge from '../../src/forge'
 import Cast from '../../src/cast'
-import { p2ms } from '../../src/casts'
+import { P2MS } from '../../src/casts'
 
 const keyPairs = [bsv.KeyPair.fromRandom(), bsv.KeyPair.fromRandom(), bsv.KeyPair.fromRandom()],
       pubKeys = keyPairs.map(k => k.pubKey)
 
 
-describe('p2ms.lockingScript', () => {
+describe('P2MS.lockingScript', () => {
   let cast;
   beforeEach(() => {
-    cast = Cast.lockingScript(p2ms, { satoshis: 5000, threshold: 2, pubKeys })
+    cast = Cast.lockingScript(P2MS, { satoshis: 5000, threshold: 2, pubKeys })
   })
 
   it('template is correct length', () => {
@@ -22,7 +22,7 @@ describe('p2ms.lockingScript', () => {
     assert.equal(cast.size(), 114)
   })
 
-  it('script() returns p2ms locking script', () => {
+  it('script() returns P2MS locking script', () => {
     const script = cast.script(cast.params)
     assert.lengthOf(script.chunks, 6)
     assert.equal(script.chunks[0].opCodeNum, bsv.OpCode.OP_2)
@@ -33,21 +33,21 @@ describe('p2ms.lockingScript', () => {
   })
 
   it('script() throws error if no threshold', () => {
-    cast = Cast.lockingScript(p2ms, { satoshis: 5000, pubKeys })
+    cast = Cast.lockingScript(P2MS, { satoshis: 5000, pubKeys })
     assert.throws(_ => cast.script(cast.params), 'P2MS lockingScript requires threshold')
   })
 
   it('script() throws error if no pubKeys', () => {
-    cast = Cast.lockingScript(p2ms, { satoshis: 5000, threshold: 2 })
+    cast = Cast.lockingScript(P2MS, { satoshis: 5000, threshold: 2 })
     assert.throws(_ => cast.script(cast.params), 'P2MS lockingScript requires pubKeys')
   })
 })
 
 
-describe('p2ms.unlockingScript', () => {
+describe('P2MS.unlockingScript', () => {
   let cast, forge;
   beforeEach(() => {
-    cast = Cast.unlockingScript(p2ms, {
+    cast = Cast.unlockingScript(P2MS, {
       txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
       vout: 0,
       satoshis: 2000,
@@ -65,7 +65,7 @@ describe('p2ms.unlockingScript', () => {
     assert.equal(cast.size(), 189)
   })
 
-  it('script() returns p2ms unlocking script', () => {
+  it('script() returns P2MS unlocking script', () => {
     const script = cast.script(forge, { keyPairs })
     assert.lengthOf(script.chunks, 4)
     assert.isTrue(bsv.Sig.IsTxDer(script.chunks[1].buf))

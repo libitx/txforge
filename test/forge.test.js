@@ -2,7 +2,7 @@ import { assert } from 'chai'
 import bsv from 'bsv'
 import Forge from '../src/forge'
 import Cast from '../src/cast'
-import { p2pkh } from '../src/casts'
+import { P2PKH } from '../src/casts'
 
 
 describe('new Forge()', () => {
@@ -93,7 +93,7 @@ describe('Forge#addInput()', () => {
   })
 
   it('adds a valid cast instance to the tx', () => {
-    const input = Cast.unlockingScript(p2pkh, {
+    const input = Cast.unlockingScript(P2PKH, {
       txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
       vout: 0,
       satoshis: 2000,
@@ -103,7 +103,7 @@ describe('Forge#addInput()', () => {
     assert.lengthOf(forge.inputs, 1)
   })
 
-  it('adds paramaters as a p2pkh cast', () => {
+  it('adds paramaters as a P2PKH cast', () => {
     forge.addInput({
       txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
       vout: 0,
@@ -140,7 +140,7 @@ describe('Forge#addOutput()', () => {
     assert.lengthOf(forge.outputs, 1)
   })
 
-  it('adds output p2pkh params to the tx', () => {
+  it('adds output P2PKH params to the tx', () => {
     forge.addOutput({
       to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq',
       satoshis: 50000
@@ -222,7 +222,7 @@ describe('Forge#estimateFee()', () => {
     forge = new Forge()
   })
 
-  it('assumes 1 p2pkh input, event when empty', () => {
+  it('assumes 1 P2PKH input, event when empty', () => {
     assert.equal(forge.estimateFee(), 79)
   })
 

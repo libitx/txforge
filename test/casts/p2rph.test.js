@@ -2,18 +2,18 @@ import { assert } from 'chai'
 import bsv from 'bsv'
 import Forge from '../../src/forge'
 import Cast from '../../src/cast'
-import { p2rph } from '../../src/casts'
+import { P2RPH } from '../../src/casts'
 
 const rBuf = Buffer.from('3d324ce134fef197a82015508aa9950da57273fe4dc4abf5ab4c50c9d06be90b', 'hex'),
       kBuf = Buffer.from('ed7d04e7ec6de2d550992479ad9f52e941049a68cd5b7a24b15659204c78b338', 'hex')
 
 
-describe('p2rph.lockingScript', () => {
+describe('P2RPH.lockingScript', () => {
   let cast1, cast2, cast3;
   beforeEach(() => {
-    cast1 = Cast.lockingScript(p2rph, { satoshis: 5000, rBuf })
-    cast2 = Cast.lockingScript(p2rph, { satoshis: 5000, type: 'PayToRHASH160', rBuf })
-    cast3 = Cast.lockingScript(p2rph, { satoshis: 5000, type: 'PayToRSHA256', rBuf })
+    cast1 = Cast.lockingScript(P2RPH, { satoshis: 5000, rBuf })
+    cast2 = Cast.lockingScript(P2RPH, { satoshis: 5000, type: 'PayToRHASH160', rBuf })
+    cast3 = Cast.lockingScript(P2RPH, { satoshis: 5000, type: 'PayToRSHA256', rBuf })
   })
 
   it('template is correct length', () => {
@@ -28,7 +28,7 @@ describe('p2rph.lockingScript', () => {
     assert.equal(cast3.size(), 55)
   })
 
-  it('script() returns p2rph locking script', () => {
+  it('script() returns P2RPH locking script', () => {
     const script1 = cast1.script(cast1.params)
     const script2 = cast2.script(cast2.params)
     assert.lengthOf(script1.chunks, 12)
@@ -38,16 +38,16 @@ describe('p2rph.lockingScript', () => {
   })
 
   it('script() throws error if no rBuf', () => {
-    const cast = Cast.lockingScript(p2rph, { satoshis: 5000 })
+    const cast = Cast.lockingScript(P2RPH, { satoshis: 5000 })
     assert.throws(_ => cast.script(cast.params), 'P2RPH lockingScript requires rBuf')
   })
 })
 
 
-describe('p2rph.unlockingScript', () => {
+describe('P2RPH.unlockingScript', () => {
   let cast, forge;
   beforeEach(() => {
-    cast = Cast.unlockingScript(p2rph, {
+    cast = Cast.unlockingScript(P2RPH, {
       txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
       vout: 0,
       satoshis: 2000,
@@ -65,7 +65,7 @@ describe('p2rph.unlockingScript', () => {
     assert.equal(cast.size(), 148)
   })
 
-  it('script() returns p2rph unlocking script', () => {
+  it('script() returns P2RPH unlocking script', () => {
     const script = cast.script(forge, { kBuf })
     assert.lengthOf(script.chunks, 2)
   })

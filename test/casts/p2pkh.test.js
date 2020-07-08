@@ -2,16 +2,16 @@ import { assert } from 'chai'
 import bsv from 'bsv'
 import Forge from '../../src/forge'
 import Cast from '../../src/cast'
-import { p2pkh } from '../../src/casts'
+import { P2PKH } from '../../src/casts'
 
 const keyPair = bsv.KeyPair.fromRandom(),
       address = bsv.Address.fromPubKey(keyPair.pubKey)
 
 
-describe('p2pkh.lockingScript', () => {
+describe('P2PKH.lockingScript', () => {
   let cast;
   beforeEach(() => {
-    cast = Cast.lockingScript(p2pkh, { satoshis: 5000, address })
+    cast = Cast.lockingScript(P2PKH, { satoshis: 5000, address })
   })
 
   it('template is correct length', () => {
@@ -22,23 +22,23 @@ describe('p2pkh.lockingScript', () => {
     assert.equal(cast.size(), 34)
   })
 
-  it('script() returns p2pkh locking script', () => {
+  it('script() returns P2PKH locking script', () => {
     const script = cast.script(cast.params)
     assert.lengthOf(script.chunks, 5)
     assert.deepEqual(script.chunks[2].buf, address.hashBuf)
   })
 
   it('script() throws error if no address', () => {
-    cast = Cast.lockingScript(p2pkh, { satoshis: 5000 })
+    cast = Cast.lockingScript(P2PKH, { satoshis: 5000 })
     assert.throws(_ => cast.script(cast.params), 'P2PKH lockingScript requires address')
   })
 })
 
 
-describe('p2pkh.unlockingScript', () => {
+describe('P2PKH.unlockingScript', () => {
   let cast, forge;
   beforeEach(() => {
-    cast = Cast.unlockingScript(p2pkh, {
+    cast = Cast.unlockingScript(P2PKH, {
       txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
       vout: 0,
       satoshis: 2000,
@@ -56,7 +56,7 @@ describe('p2pkh.unlockingScript', () => {
     assert.equal(cast.size(), 148)
   })
 
-  it('script() returns p2pkh unlocking script', () => {
+  it('script() returns P2PKH unlocking script', () => {
     const script = cast.script(forge, { keyPair })
     assert.lengthOf(script.chunks, 2)
     assert.deepEqual(script.chunks[1].buf, keyPair.pubKey.toBuffer())
