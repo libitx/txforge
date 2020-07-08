@@ -10,6 +10,9 @@ import {
   Sig
 } from 'bsv'
 
+// Patch OpCodes
+OpCode.OP_SPLIT = 0x7f
+
 /**
  * TODO
  */
@@ -28,18 +31,17 @@ const p2rph = {
       OpCode.OP_SWAP,
       OpCode.OP_SPLIT,
       OpCode.OP_DROP,
-      { name: 'hashOp', size: 1 },
-      { name: 'rHash' },
+      { name: 'hashOp', size: ({type}) => RPuzzleTypes[type || 'PayToR'].op ? 1 : 0 },
+      { name: 'rHash', size: ({type, rBuf}) => RPuzzleTypes[type || 'PayToR'].hash(rBuf).length },
       OpCode.OP_EQUALVERIFY,
       OpCode.OP_CHECKSIG
     ],
 
     /**
      * TODO
-     * @param {*} forge
      * @param {*} params
      */
-    script(_forge, { type, rBuf }) {
+    script({ type, rBuf }) {
       if (!rBuf || !Buffer.isBuffer(rBuf)) {
         throw new Error('P2RPH lockingScript requires rBuf')
       }
@@ -67,7 +69,7 @@ const p2rph = {
    */
   unlockingScript: {
     template: [
-      { name: 'sig', size: 73 },
+      { name: 'sig', size: 72 },
       { name: 'pubKey', size: 33 }
     ],
   
@@ -128,27 +130,27 @@ const p2rph = {
 const RPuzzleTypes = {
   PayToRHASH160: {
     op: OpCode.OP_HASH160,
-    hash: Hash.sha256ripemd160
+    hash: Hash.sha256Ripemd160
   },
   PayToRRIPEMD160: {
-      op: OpCode.OP_RIPEMD160,
-      hash: Hash.ripemd160
+    op: OpCode.OP_RIPEMD160,
+    hash: Hash.ripemd160
   },
   PayToRSHA256: {
-      op: OpCode.OP_SHA256,
-      hash: Hash.sha256
+    op: OpCode.OP_SHA256,
+    hash: Hash.sha256
   },
   PayToRHASH256: {
-      op: OpCode.OP_HASH256,
-      hash: Hash.sha256sha256
+    op: OpCode.OP_HASH256,
+    hash: Hash.sha256Sha256
   },
   PayToRSHA1: {
-      op: OpCode.OP_SHA1,
-      hash: Hash.sha1
+    op: OpCode.OP_SHA1,
+    hash: Hash.sha1
   },
   PayToR: {
-      op: false,
-      hash: (r) => { return r }
+    op: false,
+    hash: (r) => { return r }
   }
 }
 
@@ -161,7 +163,7 @@ function verifyKBuf(kBuf, { script }) {
   if (script.chunks.length === 13) {
     let type = Object.keys(RPuzzleTypes)
       .filter(key => RPuzzleTypes[key].op === script.chunks[9].opCodeNum)
-      .reduce((_type, key) => RPuzzleTypes[key])
+      .map(key => RPuzzleTypes[key])[0]
 
     return !!(
       script.chunks[9].opCodeNum &&

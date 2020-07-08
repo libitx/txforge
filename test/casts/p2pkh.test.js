@@ -27,6 +27,11 @@ describe('p2pkh.lockingScript', () => {
     assert.lengthOf(script.chunks, 5)
     assert.deepEqual(script.chunks[2].buf, address.hashBuf)
   })
+
+  it('script() throws error if no address', () => {
+    cast = Cast.lockingScript(p2pkh, { satoshis: 5000 })
+    assert.throws(_ => cast.script(cast.params), 'P2PKH lockingScript requires address')
+  })
 })
 
 
@@ -55,5 +60,10 @@ describe('p2pkh.unlockingScript', () => {
     const script = cast.script(forge, { keyPair })
     assert.lengthOf(script.chunks, 2)
     assert.deepEqual(script.chunks[1].buf, keyPair.pubKey.toBuffer())
+  })
+
+  it('script() throws error when incorrect keyPair', () => {
+    const keyPair = bsv.KeyPair.fromRandom()
+    assert.throws(_ => cast.script(forge, { keyPair }), 'P2PKH unlockingScript requires valid keyPair')
   })
 })

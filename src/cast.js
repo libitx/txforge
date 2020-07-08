@@ -92,6 +92,8 @@ class Cast {
    */
   size() {
     const s = this.template.reduce((sum, p) => {
+      if (typeof p === 'undefined') return sum;
+      
       let size
       if (p.size) {
         const _s = typeof p.size === 'function' ? p.size(this.params) : p.size

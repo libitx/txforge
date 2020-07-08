@@ -71,7 +71,7 @@ const p2pkh = {
       // Validations
       if (vin < 0) throw new Error('Input cast not found')
       if (!keyPair || !verifyKeyPair(keyPair, txOut)) {
-        throw new Error('Cannot sign p2pkh scriptSig without valid keypair')
+        throw new Error('P2PKH unlockingScript requires valid keyPair')
       }
   
       // Iterrate over template and create scriptSig
