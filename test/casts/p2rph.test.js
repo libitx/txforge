@@ -12,7 +12,7 @@ describe('P2RPH.lockingScript', () => {
   let cast1, cast2, cast3;
   beforeEach(() => {
     cast1 = Cast.lockingScript(P2RPH, { satoshis: 5000, rBuf })
-    cast2 = Cast.lockingScript(P2RPH, { satoshis: 5000, type: 'PayToRHASH160', rBuf })
+    cast2 = Cast.lockingScript(P2RPH, { satoshis: 5000, type: 'PayToR', rBuf })
     cast3 = Cast.lockingScript(P2RPH, { satoshis: 5000, type: 'PayToRSHA256', rBuf })
   })
 
@@ -23,18 +23,18 @@ describe('P2RPH.lockingScript', () => {
   })
 
   it('size() returns correct txOut size', () => {
-    assert.equal(cast1.size(), 54)
-    assert.equal(cast2.size(), 43)
+    assert.equal(cast1.size(), 43)
+    assert.equal(cast2.size(), 54)
     assert.equal(cast3.size(), 55)
   })
 
   it('script() returns P2RPH locking script', () => {
     const script1 = cast1.script(cast1.params)
     const script2 = cast2.script(cast2.params)
-    assert.lengthOf(script1.chunks, 12)
-    assert.lengthOf(script2.chunks, 13)
-    assert.deepEqual(script1.chunks[9].buf, rBuf)
-    assert.deepEqual(script2.chunks[10].buf, bsv.Hash.sha256Ripemd160(rBuf))
+    assert.lengthOf(script1.chunks, 13)
+    assert.lengthOf(script2.chunks, 12)
+    assert.deepEqual(script1.chunks[10].buf, bsv.Hash.sha256Ripemd160(rBuf))
+    assert.deepEqual(script2.chunks[9].buf, rBuf)
   })
 
   it('script() throws error if no rBuf', () => {

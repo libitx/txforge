@@ -14,6 +14,8 @@ import {
 // https://github.com/moneybutton/bsv/issues/161
 OpCode.OP_SPLIT = 0x7f
 
+const defaultRHash = 'PayToRHASH160'
+
 /**
  * TODO
  */
@@ -32,8 +34,8 @@ const P2RPH = {
       OpCode.OP_SWAP,
       OpCode.OP_SPLIT,
       OpCode.OP_DROP,
-      { name: 'hashOp', size: ({type}) => RPuzzleTypes[type || 'PayToR'].op ? 1 : 0 },
-      { name: 'rHash', size: ({type, rBuf}) => RPuzzleTypes[type || 'PayToR'].hash(rBuf).length },
+      { name: 'hashOp', size: ({type = defaultRHash}) => RPuzzleTypes[type].op ? 1 : 0 },
+      { name: 'rHash', size: ({type = defaultRHash, rBuf}) => RPuzzleTypes[type].hash(rBuf).length },
       OpCode.OP_EQUALVERIFY,
       OpCode.OP_CHECKSIG
     ],
@@ -42,12 +44,12 @@ const P2RPH = {
      * TODO
      * @param {*} params
      */
-    script({ type, rBuf }) {
+    script({ type = defaultRHash, rBuf }) {
       if (!rBuf || !Buffer.isBuffer(rBuf)) {
         throw new Error('P2RPH lockingScript requires rBuf')
       }
 
-      type = RPuzzleTypes[type || 'PayToR']
+      type = RPuzzleTypes[type]
 
       return this.template.reduce((script, part) => {
         switch (part.name) {
