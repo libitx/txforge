@@ -194,8 +194,17 @@ class UnlockingScript extends Cast {
    */
   placeholder() {
     return this.template.reduce((script, part) => {
-      const buf = Buffer.alloc(part.size)
-      return script.writeBuffer(buf)
+      if (part.size) {
+        const size = typeof part.size === 'function' ? part.size(this.params) : part.size
+        const buf = Buffer.alloc(size)
+        script.writeBuffer(buf)
+      } else if (Buffer.isBuffer(part)) {
+        script.writeBuffer(part)
+      } else {
+        script.writeOpCode(part)
+      }
+      
+      return script
     }, new Script())
   }
 
