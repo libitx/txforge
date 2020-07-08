@@ -94,7 +94,8 @@ class Cast {
     const s = this.template.reduce((sum, p) => {
       let size
       if (p.size) {
-        size = VarInt.fromNumber(p.size).buf.length + p.size;
+        const _s = typeof p.size === 'function' ? p.size(this.params) : p.size
+        size = VarInt.fromNumber(_s).buf.length + _s
       } else if (Buffer.isBuffer(p)) {
         size = VarInt.fromNumber(p.length).buf.length + p.length
       } else {

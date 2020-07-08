@@ -6,14 +6,14 @@ import {
 /**
  * TODO
  */
-const opReturn = {
+const opreturn = {
   /**
    * TODO
    */
   lockingScript: {
     // TODO
     template: [
-      OpCode.OP_FALSE,
+      { name: 'opFalse', size: ({safe = true}) => safe ? 1 : 0 },
       OpCode.OP_RETURN
     ],
 
@@ -48,4 +48,4 @@ const opReturn = {
   }
 }
 
-export default opReturn
+export default opreturn
