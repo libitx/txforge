@@ -120,21 +120,6 @@ class Cast {
 
     this.validate(...args)
 
-    //return this.template.reduce((script, p) => {
-    //  let data = typeof p.data === 'function' ? p.data(...args) : p
-    //  if (typeof data === 'undefined') return script;
-    //
-    //  if (Buffer.isBuffer(data)) {
-    //    script.writeBuffer(data)
-    //  } else if (typeof data === 'number') {
-    //    script.writeOpCode(data)
-    //  } else if (data.chunks) {
-    //    script.writeScript(data)
-    //  }
-    //  
-    //  return script
-    //}, new Script())
-
     return this.script.reduce((script, chunk) => {
       let data = typeof chunk === 'function' ? chunk(...args) : chunk
       if (typeof data === 'undefined') return script;

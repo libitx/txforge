@@ -5,14 +5,27 @@ import {
 } from 'bsv'
 
 /**
- * TODO
+ * P2PK (pay-to-pubKey) cast
+ * 
+ * Build and spend pay-to-pubKey transactions, using the locking and unlocking
+ * scripts available in this cast.
  */
 const P2PK = {
   /**
-   * TODO
+   * P2PK lockingScript
+   * 
+   * The expected lock parameters are:
+   * 
+   * * `pubKey` - the bsv PubKey object to pay to
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates P2PK lockingScript
+   * Cast.lockingScript(P2PK, { satoshis: 1000, pubKey })
+   * ```
    */
   lockingScript: {
-    // TODO
     script: [
       // 1. PubKey
       ({ pubKey }) => pubKey.toBuffer(),
@@ -22,14 +35,16 @@ const P2PK = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @property {Object} size Script size
      */
     size: 35,
 
     /**
-     * TODO
-     * @param {Object} params 
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
      */
     validate(params) {
       if (!(params.pubKey && params.pubKey.point)) {
@@ -39,7 +54,21 @@ const P2PK = {
   },
 
   /**
-   * TODO
+   * P2PK unlockingScript
+   * 
+   * The expected unlock parameters are:
+   * 
+   * * `keyPair` - bsv KeyPair object
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates unlockingScript from UTXO
+   * Cast.unlockingScript(P2PK, { txid, txOutNum, txOut, nSequence })
+   * 
+   * // Sign the unlockingScript a keyPair (assuming vin 0)
+   * forge.signTxIn(0, { keyPair })
+   * ```
    */
   unlockingScript: {
     script: [
@@ -56,14 +85,16 @@ const P2PK = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @property {Object} size Script size
      */
     size: 73,
 
     /**
-     * TODO
-     * @param {Object} params 
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
      */
     validate(ctx, params) {
       if (!params.keyPair || !verifyKeyPair(params.keyPair, ctx.txOut)) {
@@ -73,8 +104,7 @@ const P2PK = {
   }
 }
 
-
-// TODO
+// Helper function verifies the given keyPair matches the pubKey in txOut
 function verifyKeyPair(keyPair, { script }) {
   return !!(
     script.chunks.length === 2 &&

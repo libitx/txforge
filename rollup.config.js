@@ -5,38 +5,108 @@ import { terser } from 'rollup-plugin-terser'
 import banner from 'rollup-plugin-banner'
 import merge from 'deepmerge'
 
-// Production build
-const base = {
-  input: 'src/index.js',
-  output: {
-    file: 'dist/txforge.js',
-    format: 'umd',
-    name: 'TxForge',
-    globals: {
-      bsv: 'bsvjs'
+export default [
+  // Production build
+  {
+    input: 'index.js',
+    output: {
+      file: 'dist/txforge.js',
+      format: 'umd',
+      name: 'TxForge',
+      globals: {
+        bsv: 'bsvjs'
+      }
+    },
+    external: ['bsv'],
+    plugins: [
+      resolve({ browser: true }),
+      commonjs(),
+      babel({
+        exclude: 'node_modules/**',
+        babelHelpers: 'bundled'
+      }),
+      banner('TxForge - v<%= pkg.version %>\n<%= pkg.description %>\n<%= pkg.repository %>\nCopyright © <%= new Date().getFullYear() %> Chronos Labs Ltd. Apache-2.0 License')
+    ],
+
+    // suppress eval warnings
+    onwarn(warning, warn) {
+      if (warning.code === 'EVAL') return
+      warn(warning)
     }
   },
-  external: ['bsv'],
-  plugins: [
-    resolve({ browser: true }),
-    commonjs(),
-    babel({
-      exclude: 'node_modules/**',
-      babelHelpers: 'bundled'
-    }),
-    banner('TxForge - v<%= pkg.version %>\n<%= pkg.description %>\n<%= pkg.repository %>\nCopyright © <%= new Date().getFullYear() %> Chronos Labs Ltd. Apache-2.0 License')
-  ]
-}
 
-// Production build minimised
-const mini = merge(base, {
-  output: {
-    file: 'dist/txforge.min.js',
+  // Production minimized
+  {
+    input: 'index.js',
+    output: {
+      file: 'dist/txforge.min.js',
+      format: 'umd',
+      name: 'TxForge',
+      globals: {
+        bsv: 'bsvjs'
+      }
+    },
+    external: ['bsv'],
+    plugins: [
+      resolve({ browser: true }),
+      commonjs(),
+      babel({
+        exclude: 'node_modules/**',
+        babelHelpers: 'bundled'
+      }),
+      terser(),
+      banner('TxForge - v<%= pkg.version %>\n<%= pkg.description %>\n<%= pkg.repository %>\nCopyright © <%= new Date().getFullYear() %> Chronos Labs Ltd. Apache-2.0 License')
+    ],
+
+    // suppress eval warnings
+    onwarn(warning, warn) {
+      if (warning.code === 'EVAL') return
+      warn(warning)
+    }
+  },
+
+  // Casts build
+  {
+    input: 'casts.js',
+    output: {
+      file: 'dist/txforge.casts.js',
+      format: 'umd',
+      name: 'casts',
+      globals: {
+        bsv: 'bsvjs'
+      }
+    },
+    external: ['bsv'],
+    plugins: [
+      resolve({ browser: true }),
+      commonjs(),
+      babel({
+        exclude: 'node_modules/**',
+        babelHelpers: 'bundled'
+      })
+    ]
+  },
+
+  // Casts minimized
+  {
+    input: 'casts.js',
+    output: {
+      file: 'dist/txforge.casts.min.js',
+      format: 'umd',
+      name: 'casts',
+      globals: {
+        bsv: 'bsvjs'
+      }
+    },
+    external: ['bsv'],
+    plugins: [
+      resolve({ browser: true }),
+      commonjs(),
+      babel({
+        exclude: 'node_modules/**',
+        babelHelpers: 'bundled'
+      }),
+      terser()
+    ]
   }
-})
-mini.plugins.splice(-2, 0, terser())
-
-export default [
-  base,
-  mini,
 ]

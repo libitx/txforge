@@ -16,11 +16,30 @@ OpCode.OP_SPLIT = 0x7f
 const defaultRHash = 'PayToRHASH160'
 
 /**
- * TODO
+ * P2RPH (R-Puzzle) cast
+ * 
+ * Build and spend R-Puzzles, using the locking and unlocking scripts available
+ * in this cast.
+ * 
+ * This cast wouldn't be possible without Dean Little revealing how R-Puzzles
+ * actually work in his library, [rpuzzle](https://github.com/deanmlittle/rpuzzle).
+ * Much of the code in this module is adapted from Dean's work.
  */
 const P2RPH = {
   /**
-   * TODO
+   * P2RPH lockingScript
+   * 
+   * The expected lock parameters are:
+   * 
+   * * `type` - the hash algorithm to use (defaults to 'PayToRHASH160')
+   * * `rBuf` - the R value in a Buffer or typed array
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates R-Puzzle lockingScript
+   * Cast.lockingScript(P2RPH, { satoshis: 0, rBuf })
+   * ```
    */
   lockingScript: {
     script: [
@@ -47,16 +66,19 @@ const P2RPH = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @param {Object} params Cast params
+     * @returns {Number}
      */
     size({ type = defaultRHash }) {
       return 12 + (RPuzzleTypes[type].op ? 1 : 0) + RPuzzleTypes[type].size
     },
 
     /**
-     * TODO
-     * @param {*} params
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
      */
     validate(params) {
       if (!(params.rBuf && Buffer.isBuffer(params.rBuf))) {
@@ -66,7 +88,22 @@ const P2RPH = {
   },
 
   /**
-   * TODO
+   * P2RPH unlockingScript
+   * 
+   * The expected unlock parameters are:
+   * 
+   * * `kBuf` - the K value in a Buffer or typed array
+   * * `keyPair` - the bsv KeyPair to sign with (will generate ephemeral key if blank)
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates unlockingScript from UTXO
+   * Cast.unlockingScript(P2RPH, { txid, txOutNum, txOut, nSequence })
+   * 
+   * // Sign the unlockingScript with kBuf and keyPair (assuming vin 0)
+   * forge.signTxIn(0, { kBuf, keyPair })
+   * ```
    */
   unlockingScript: {
     script: [
@@ -97,19 +134,28 @@ const P2RPH = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @property {Object} size Script size
      */
     size: 107,
 
     /**
-     * TODO
+     * Generats a random bsv KeyPair if not already defined
+     * 
+     * @param {Object} params Cast params
+     * @returns {Object}
      */
     setup({ keyPair }) {
       if (!keyPair) keyPair = KeyPair.fromRandom()
       return { keyPair }
     },
 
+    /**
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
+     */
     validate(ctx, params) {
       if (!(params.kBuf && verifyKBuf(params.kBuf, ctx.txOut))) {
         throw new Error('P2RPH unlockingScript requires valid kBuf')
@@ -119,7 +165,8 @@ const P2RPH = {
 }
 
 
-// TODO
+// The available hashing algos
+// Use PayToR to pay to the bare R value
 const RPuzzleTypes = {
   PayToRHASH160: {
     op: OpCode.OP_HASH160,
@@ -152,8 +199,7 @@ const RPuzzleTypes = {
   }
 }
 
-
-// TODO
+// Helper function verifies the kBuf matches the R Hash in txOut
 function verifyKBuf(kBuf, { script }) {
   const rBuf = getRBuf(kBuf)
 
@@ -182,7 +228,7 @@ function verifyKBuf(kBuf, { script }) {
   }
 }
 
-// TODO
+// Helper function converts kBuf to rBuf
 function getRBuf(kBuf) {
   const k = Bn.fromBuffer(kBuf),
         G = Point.getG(),

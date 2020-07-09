@@ -7,11 +7,25 @@ import {
 
 
 /**
- * TODO
+ * P2PKH (pay-to-pubKeyHash) cast
+ * 
+ * Build and spend pay-to-pubKeyHash transactions, using the locking and
+ * unlocking scripts available in this cast.
  */
 const P2PKH = {
   /**
-   * TODO
+   * P2PKH lockingScript
+   * 
+   * The expected lock parameters are:
+   * 
+   * * `address` - the bsv Address object to pay to
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates P2PK lockingScript
+   * Cast.lockingScript(P2PKH, { satoshis: 1000, address })
+   * ```
    */
   lockingScript: {
     script: [
@@ -28,11 +42,17 @@ const P2PKH = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @property {Object} size Script size
      */
     size: 25,
 
+    /**
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
+     */
     validate(params) {
       if (!(params.address && params.address.hashBuf)) {
         throw new Error('P2PKH lockingScript requires address')
@@ -41,7 +61,21 @@ const P2PKH = {
   },
 
   /**
-   * TODO
+   * P2PKH unlockingScript
+   * 
+   * The expected unlock parameters are:
+   * 
+   * * `keyPair` - bsv KeyPair object
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates unlockingScript from UTXO
+   * Cast.unlockingScript(P2PKH, { txid, txOutNum, txOut, nSequence })
+   * 
+   * // Sign the unlockingScript a keyPair (assuming vin 0)
+   * forge.signTxIn(0, { keyPair })
+   * ```
    */
   unlockingScript: {
     script: [
@@ -61,11 +95,17 @@ const P2PKH = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @property {Object} size Script size
      */
     size: 107,
 
+    /**
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
+     */
     validate(ctx, params) {
       if (!(params.keyPair && verifyKeyPair(params.keyPair, ctx.txOut))) {
         throw new Error('P2PKH unlockingScript requires valid keyPair')
@@ -74,8 +114,7 @@ const P2PKH = {
   }
 }
 
-
-// TODO
+// Helper function verifies the given keyPair matches the pubKey in txOut
 function verifyKeyPair(keyPair, { script }) {
   const hashBuf = Address.fromPubKey(keyPair.pubKey).hashBuf
   return !!(

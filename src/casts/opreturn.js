@@ -7,35 +7,44 @@ import {
 /**
  * OP_RETURN cast
  * 
- * Builds OP_RETURN outputs that can contain any arbitrary data.
+ * OP_RETURNS are frequently used to create transaction outputs containing
+ * arbitrary data.
  * 
- * The accepted parameters are:
- * 
- * * `data` - an array of data chunks (see below)
- * * `safe` - set to false for spendable OP_RETURNS (careful)
- * 
- * The data array can contain any of the following types of element:
- * 
- * * Strings
- * * Hex-encoded strings, eg: `0xfafbfcfd`
- * * Raw buffers or typed arrays
- * * OpCode numbers
- * 
- * Example:
- * 
- * Cast.lockingScript(OpReturn, {
- *   data: [
- *     '0x48656c6c6f20776f726c64',
- *     'Hello world',
- *     Buffer.from('Hello world'),
- *     new Uint8Array([72, 101, 108, 108, 111,  32, 119, 111, 114, 108, 100]),
- *     OpCode.OP_FALSE
- *   ]
- * })
+ * The cast automatically handles your given data array containing strings,
+ * hex-strings, buffers and OpCodes, and processes it into a Script.
  */
 const OpReturn = {
+  /**
+   * OP_RETURN lockingScript
+   * 
+   * The expected parameters are:
+   * 
+   * * `data` - an array of data chunks (see below)
+   * * `safe` - set to false for spendable OP_RETURNS (defaults true)
+   * 
+   * The data array can contain any of the following types of element:
+   * 
+   * * Strings
+   * * Hex-encoded strings, eg: `0xfafbfcfd`
+   * * Raw buffers or typed arrays
+   * * OpCode numbers
+   * 
+   * Example:
+   * 
+   * ```
+   * Cast.lockingScript(OpReturn, {
+   *   satoshis: 0,
+   *   data: [
+   *     '0x48656c6c6f20776f726c64',
+   *     'Hello world',
+   *     Buffer.from('Hello world'),
+   *     new Uint8Array([72, 101, 108, 108, 111,  32, 119, 111, 114, 108, 100]),
+   *     OpCode.OP_FALSE
+   *   ]
+   * })
+   * ```
+   */
   lockingScript: {
-    // TODO
     script: [
       // 1. OP_FALSE (if safe)
       ({ safe = true }) => safe ? OpCode.OP_FALSE : undefined,
@@ -70,7 +79,10 @@ const OpReturn = {
     ],
 
     /**
-     * TODO
+     * Returns the size of the script.
+     * 
+     * @param {Object} params Cast params
+     * @returns {Number}
      */
     size(params) {
       const scriptLen = this.getScript(params).toBuffer().length
@@ -78,7 +90,7 @@ const OpReturn = {
     },
 
     /**
-     * Validates the given params
+     * Validates the given params.
      * 
      * @param {Object} params Cast params
      */

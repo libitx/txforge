@@ -6,18 +6,33 @@ import {
 } from 'bsv'
 
 /**
- * TODO
+ * P2MS (multisig) cast
+ * 
+ * Build and spend multisig transactions, using the locking and unlocking
+ * scripts available in this cast.
  */
 const P2MS = {
   /**
-   * TODO
+   * P2MS lockingScript
+   * 
+   * The expected lock parameters are:
+   * 
+   * * `threshold` - the number of signatures required to unlock the UTXO
+   * * `pubKeys` - array of bsv PubKey objects 
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates 2 of 3 multisig lockingScript
+   * Cast.lockingScript(P2MS, { satoshis: 1000, threshold: 2, pubKeys: [pk1, pk2, pk3] })
+   * ```
    */
   lockingScript: {
     script: [
-      // thresholdOp
+      // 1. Threshold Op
       ({ threshold }) => threshold + OpCode.OP_1 - 1,
 
-      // pubKeys
+      // 2. PubKeys
       function({ pubKeys }) {
         return pubKeys.reduce((script, pubKey) => {
           script.writeBuffer(pubKey.toBuffer())
@@ -25,20 +40,25 @@ const P2MS = {
         }, new Script())
       },
 
-      // pubKeysOp
+      // 3. PubKeys Op
       ({ pubKeys }) => pubKeys.length + OpCode.OP_1 - 1,
+
+      // 4. OP_CHECKMULTISIG
       OpCode.OP_CHECKMULTISIG
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @param {Object} params Cast params
+     * @returns {Number}
      */
     size: ({ pubKeys }) => 2 + (pubKeys.length * 34),
 
     /**
-     * TODO
-     * @param {*} params
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
      */
     validate(params) {
       if (typeof params.threshold !== 'number') {
@@ -51,7 +71,21 @@ const P2MS = {
   },
 
   /**
-   * TODO
+   * P2MS unlockingScript
+   * 
+   * The expected unlock parameters are:
+   * 
+   * * `keyPairs` - array of bsv KeyPair objects
+   * 
+   * Example:
+   * 
+   * ```
+   * // Creates unlockingScript from UTXO
+   * Cast.unlockingScript(P2MS, { txid, txOutNum, txOut, nSequence })
+   * 
+   * // Sign the unlockingScript with 2 keyPairs (assuming vin 0)
+   * forge.signTxIn(0, { keyPairs: [k1, k2] })
+   * ```
    */
   unlockingScript: {
     script: [
@@ -79,14 +113,18 @@ const P2MS = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Returns the size of the script.
+     * 
+     * @param {Object} params Cast params
+     * @returns {Number}
      */
     size: (params) => 1 + ((params.keyPairs ? params.keyPairs.length : 2) * 73),
     
 
     /**
-     * TODO
+     * Validates the given params.
+     * 
+     * @param {Object} params Cast params
      */
     validate(ctx, params) {
       if (!params.keyPairs) throw new Error('P2MS unlockingScript requires valid keyPairs')
@@ -97,7 +135,7 @@ const P2MS = {
   }
 }
 
-// TODO
+// Helper function verifies all given keyPairs match pubKeys in txOut
 function verifyKeyPairs(keyPairs, { script }) {
   return Array.isArray(keyPairs) && keyPairs.every(keyPair => {
     return !!(
