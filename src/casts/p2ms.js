@@ -56,7 +56,7 @@ const P2MS = {
    */
   unlockingScript: {
     template: [
-      OpCode.OP_1,
+      OpCode.OP_0,
       // sigs
       {
         size: (params) => (params.keyPairs ? params.keyPairs.length : 2) * 73,

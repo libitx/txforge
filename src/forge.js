@@ -305,7 +305,7 @@ class Forge {
 
     if (this.inputs.length > 0) {
       this.inputs.forEach(cast => {
-        parts.push({ standard: cast.estimateSize() })
+        parts.push({ standard: cast.getSize() })
       })
     } else {
       // Assume single p2pkh script

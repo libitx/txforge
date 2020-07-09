@@ -1,8 +1,9 @@
 {
   "name": "txforge",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "scripts": {
     "build": "rollup -c rollup.config.js",
     "test": "mocha \"test/**/*.test.js\" --require esm"
