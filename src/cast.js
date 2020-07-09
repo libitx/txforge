@@ -8,9 +8,12 @@ import {
 /**
  * Cast class
  * 
- * Casts are an abstraction over transaction inputs. It provides a simple way
- * for developers to define simple, self-contained modules responsible for
- * specifiying a scriptSig template, and a function for generating the scriptSig. 
+ * Casts are an abstraction over transaction input and outputs. A cast provides
+ * a simple, unified way for developers to define self contained modules
+ * representing `lockingScript` and `unlockingScript` templates.
+ * 
+ * The templates defined within a Cast are dynamic and allow complex scripts to
+ * be build when given specific parameters.
  */
 class Cast {
   /**
@@ -31,10 +34,17 @@ class Cast {
   }
 
   /**
-   * TODO
-   * @param {Object} cast
-   * @param {Number} satoshis
-   * @param {Object} params
+   * Instantiates a `lockingScript` Cast instance.
+   * 
+   * The following parameters are required:
+   * 
+   * * `satoshis` - the amount to send in the output (also accepts `amount`)
+   * 
+   * Additional parameters may be required, depending on the Cast template.
+   * 
+   * @param {Object} cast Cast template object
+   * @param {Object} params Cast parameters
+   * @constructor
    */
   static lockingScript(cast, params = {}) {
     requiresAny(params, 'lockingScript', [
@@ -47,9 +57,19 @@ class Cast {
   }
 
   /**
-   * TODO
-   * @param {Object} cast
-   * @param {Object} params
+   * Instantiates an `unlockingScript` Cast instance.
+   * 
+   * The following parameters are required:
+   * 
+   * * `txid` - txid of the UTXO
+   * * `script` - hex encoded script of the UTXO
+   * * `satoshis` - the amount in the UTXO (also accepts `amount`)
+   * * `vout` - the UTXO output index (also accepts `outputIndex` and `txOutNum`)
+   * 
+   * Additional parameters may be required, depending on the Cast template.
+   * 
+   * @param {Object} cast Cast template object
+   * @param {Object} params Cast parameters
    * @constructor
    */
   static unlockingScript(cast, params = {}) {
@@ -102,7 +122,9 @@ class Cast {
   }
 
   /**
-   * Returns the generated scriptSig. Must be defined in the Cast template.
+   * Returns the full generated script.
+   * 
+   * Iterrates over the template and builds the script chunk by chunk.
    * 
    * @returns {Script}
    */
@@ -162,22 +184,35 @@ class Cast {
   }
 
   /**
-   * TODO
+   * Callback function that can be overriden in the Cast template.
+   * 
+   * Returning an Object from this function will make all properties in that
+   * Object available to all chunks of the template.
+   * 
+   * @returns {Object}
    */
   setup() {
     // noop
   }
 
   /**
-   * TODO
+   * Callback function that can be overriden in the Cast template.
+   * 
+   * This is called after `setup()` and receives all parameters that the template
+   * build functions receive. This provides a way to check parameters and throw
+   * appropriate errors if the parameters aren't correct to build the script.
+   * 
+   * @param {Obejct} ctx
+   * @param {Obejct} params
    */
-  validate() {
+  validate(...args) {
     // noop
   }
 }
 
 
-// TODO
+// Helper function to ensure all the specified attributes exist in the given
+// params
 function requires(params, type, attrs) {
   attrs.forEach(attr => {
     if (typeof params[attr] === 'undefined')
@@ -185,7 +220,8 @@ function requires(params, type, attrs) {
   })
 }
 
-// TODO
+// Helper function to ensure any of the specified attributes exist in the given
+// params
 function requiresAny(params, type, attrs) {
   attrs.forEach(aliases => {
     if (aliases.every(attr => typeof params[attr] === 'undefined')) {
@@ -195,14 +231,16 @@ function requiresAny(params, type, attrs) {
 }
 
 /**
- * TODO
+ * LockingScript Cast sub-class
  */
 class LockingScript extends Cast {
   /**
-   * TODO
-   * @param {Object} cast
-   * @param {Number} satoshis
-   * @param {Object} params
+   * Instantiates a new LockingScript instance.
+   * 
+   * @param {Object} cast Cast template object
+   * @param {Number} satoshis Amount to send
+   * @param {Object} params Other parameters
+   * @constructor
    */
   constructor(cast, satoshis, params = {}) {
     super(cast)
@@ -216,7 +254,9 @@ class LockingScript extends Cast {
   }
 
   /**
-   * TODO
+   * Returns the estimated size of the entire TxOut object
+   * 
+   * @returns {Number}
    */
   getSize() {
     return super.getSize() + 8 // satoshis (8)
@@ -224,16 +264,18 @@ class LockingScript extends Cast {
 }
 
 /**
- * TODO
+ * UnlockingScript Cast sub-class
  */
 class UnlockingScript extends Cast {
   /**
-   * TODO
-   * @param {Object} cast
-   * @param {String} txid
-   * @param {Number} txOutNum
-   * @param {TxOut} txOut
-   * @param {Number} nSequence
+   * Instantiates a new UnlockingScript instance.
+   * 
+   * @param {Object} cast Cast template object
+   * @param {String} txid UTXO transaction id
+   * @param {Number} txOutNum UTXO output index
+   * @param {TxOut} txOut UTXO TxOut object
+   * @param {Number} nSequence nSequence number
+   * @constructor
    */
   constructor(cast, txid, txOutNum, txOut, nSequence, params = {}) {
     super(cast)
@@ -254,14 +296,21 @@ class UnlockingScript extends Cast {
   }
 
   /**
-   * TODO
+   * Returns the estimated size of the entire TxIn object
+   * 
+   * @returns {Number}
    */
   getSize() {
     return super.getSize() + 40 // txid (32), vout (4), nSquence (4)
   }
 
   /**
-   * TODO
+   * Returns the full generated script.
+   * 
+   * Adds a context object which is passed to each of the `unlockingScript`
+   * template build functions.
+   * 
+   * @returns {Script}
    */
   getScript(forge, params) {
     const tx = forge.tx,

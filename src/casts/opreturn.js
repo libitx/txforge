@@ -4,25 +4,52 @@ import {
 } from 'bsv'
 
 /**
- * TODO
+ * OP_RETURN cast
+ * 
+ * Builds OP_RETURN outputs that can contain any arbitrary data.
+ * 
+ * The accepted parameters are:
+ * 
+ * * `data` - an array of data chunks (see below)
+ * * `safe` - set to false for spendable OP_RETURNS (careful)
+ * 
+ * The data array can contain any of the following types of element:
+ * 
+ * * Strings
+ * * Hex-encoded strings, eg: `0xfafbfcfd`
+ * * Raw buffers or typed arrays
+ * * OpCode numbers
+ * 
+ * Example:
+ * 
+ * Cast.lockingScript(OpReturn, {
+ *   data: [
+ *     '0x48656c6c6f20776f726c64',
+ *     'Hello world',
+ *     Buffer.from('Hello world'),
+ *     new Uint8Array([72, 101, 108, 108, 111,  32, 119, 111, 114, 108, 100]),
+ *     OpCode.OP_FALSE
+ *   ]
+ * })
  */
 const OpReturn = {
-  /**
-   * TODO
-   */
   lockingScript: {
     // TODO
     template: [
-      // opFalse
+      // 1. OP_FALSE (if safe)
       {
         size: ({ safe = true }) => safe ? 1 : 0,
         data: ({ safe = true }) => safe ? OpCode.OP_FALSE : undefined
       },
+
+      // 2. OP_RETURN
       OpCode.OP_RETURN,
-      // data
+
+      // 3. Arbitrary data
       {
         size(params) { return this.data(params).toBuffer().length },
         data({ data }) {
+          // Iterates over data params and returns a Script instance
           return data.reduce((script, item) => {
             // Hex string
             if (typeof item === 'string' && /^0x/i.test(item)) {
@@ -48,8 +75,9 @@ const OpReturn = {
     ],
 
     /**
-     * TODO
-     * @param {*} params
+     * Validates the given params
+     * 
+     * @param {Object} params Cast params
      */
     validate(params) {
       if (!(Array.isArray(params.data) && params.data.length)) {

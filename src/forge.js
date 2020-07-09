@@ -28,7 +28,15 @@ class Forge {
   /**
    * Instantiates a new Forge instance.
    * 
-   * @param {Object} options Tx options
+   * The accepted params are:
+   * 
+   * * `inputs` - list of input objects or cast instances
+   * * `outputs` - list of output objects or cast instances
+   * * `changeTo` - address to send change to
+   * * `changeScript` - bsv Script object to send change to
+   * * `options` - set `rates` or `debug` options
+   * 
+   * @param {Object} params Tx parameters
    * @constructor
    */
   constructor({
@@ -60,24 +68,6 @@ class Forge {
       outputs: this.outputs
     })
   }
-
-//  /**
-//   * Instantiates a new Cast instance.
-//   * 
-//   * @param {Object} castSchema Cast schema object
-//   * @param {Object} input Input UTXO params
-//   * @returns {Cast}
-//   */
-//  static cast(castSchema, input) {
-//    const txid = input.txid,
-//          vout = input.vout || input.outputIndex || input.txOutNum,
-//          script = Script.fromHex(input.script),
-//          satoshis = input.satoshis || input.amount,
-//          satoshisBn = Bn(satoshis),
-//          txOut = TxOut.fromProperties(satoshisBn, script)
-//
-//    return new Cast(castSchema, txid, vout, txOut, input.nSequence)
-//  }
 
   /**
    * Returns the tx change address.
@@ -126,9 +116,9 @@ class Forge {
    * Adds the given input to the tx.
    * 
    * The input should be a Cast instance, otherwise the given params will be
-   * used to instantiate a p2pkh Cast.
+   * used to instantiate a P2PKH Cast.
    * 
-   * @param {Cast | Object} input Input Cast or p2pkh UTXO params
+   * @param {Cast | Object} input Input Cast or P2PKH UTXO params
    * @returns {Forge}
    */
   addInput(input = []) {
@@ -151,12 +141,15 @@ class Forge {
    * 
    * The params object should contain one of the following properties:
    * 
-   * * `to` - Bitcoin address to create p2pkh output
+   * * `to` - Bitcoin address to create P2PKH output
    * * `script` - hex encoded output script
-   * * `data` - array of chunks which will be automatically parsed into a script
+   * * `data` - array of chunks which will be automatically parsed into an OP_RETURN script
    * 
    * Unless the output is an OP_RETURN data output, the params must contain a
    * `satoshis` property reflecting the number of satoshis to send.
+   * 
+   * For advanced use, Cast instances can be given as outputs. This allows
+   * sending to non-standard and custom scripts.
    * 
    * @param {Object} output Output params
    * @returns {Forge}
@@ -192,8 +185,9 @@ class Forge {
   /**
    * Builds the transaction on the forge instance.
    * 
-   * `build()` must be called first before attempting to sign. The scriptSigs
-   * are generate with signatures and other dynamic push datas zeroed out.
+   * `build()` must be called first before attempting to sign. The
+   * `unlockingScripts` are generated with signatures and other dynamic push
+   * data zeroed out.
    * 
    * @returns {Forge}
    */
@@ -201,7 +195,7 @@ class Forge {
     // Create a new tx
     this.tx = new Tx()
 
-    // Iterate over inputs and add placeholder scriptSigs
+    // Iterate over inputs and add placeholder unlockingScripts
     this.inputs.forEach(cast => {
       const script = cast.getPlaceholderScript()
       this.tx.addTxIn(cast.txHashBuf, cast.txOutNum, script, cast.nSequence)
@@ -236,14 +230,14 @@ class Forge {
   }
 
   /**
-   * Iterates over the inputs and generates the scriptSig for each TxIn. Must be
-   * called after `build()`.
+   * Iterates over the inputs and generates the `unlockingScript` for each TxIn.
+   * Must be called after `build()`.
    * 
    * The given `params` will be passed to each Cast instance. For most standard
    * transactions this is all that is needed. For non-standard transaction types
    * try calling `signTxIn(vin, params)` on individual inputs.
    * 
-   * @param {Object} params ScriptSig params
+   * @param {Object} params unlockingScript params
    * @returns {Forge}
    */
   sign(params) {
@@ -261,14 +255,14 @@ class Forge {
   }
 
   /**
-   * Generates the scriptSig for the TxIn specified by the given index.
+   * Generates the `unlockingScript` for the TxIn specified by the given index.
    * 
    * The given `params` will be passed to each Cast instance. This is useful for
-   * non-standard transaction types as tailored scriptSig params can be passed
-   * to each Cast instance.
+   * non-standard transaction types as tailored `unlockingScript` params can be
+   * passed to each Cast instance.
    * 
    * @param {Number} vin Input index
-   * @param {Object} params ScriptSig params
+   * @param {Object} params unlockingScript params
    */
   signTxIn(vin, params) {
     if (!(
