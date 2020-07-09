@@ -22,9 +22,9 @@ class Cast {
    * @param {Object} cast Cast template object
    * @constructor
    */
-  constructor({template, setup, validate} = {}) {
-    // Set template and script
-    this.template = template || []
+  constructor({script, size, setup, validate} = {}) {
+    this.script = script || []
+    this.size = size
     if (setup && typeof setup === 'function') {
       this.setup = setup
     }
@@ -100,28 +100,6 @@ class Cast {
   }
 
   /**
-   * Returns a placeholder script, with signatures and dynamic push datas zeroed
-   * out.
-   * 
-   * @returns {Script}
-   */
-  getPlaceholderScript() {
-    return this.template.reduce((script, p) => {
-      if (p.size) {
-        const size = typeof p.size === 'function' ? p.size(this.params) : p.size
-        const buf = Buffer.alloc(size)
-        script.writeBuffer(buf)
-      } else if (Buffer.isBuffer(p)) {
-        script.writeBuffer(p)
-      } else {
-        script.writeOpCode(p)
-      }
-      
-      return script
-    }, new Script())
-  }
-
-  /**
    * Returns the full generated script.
    * 
    * Iterrates over the template and builds the script chunk by chunk.
@@ -142,11 +120,26 @@ class Cast {
 
     this.validate(...args)
 
-    return this.template.reduce((script, p) => {
-      let data = typeof p.data === 'function' ? p.data(...args) : p
+    //return this.template.reduce((script, p) => {
+    //  let data = typeof p.data === 'function' ? p.data(...args) : p
+    //  if (typeof data === 'undefined') return script;
+    //
+    //  if (Buffer.isBuffer(data)) {
+    //    script.writeBuffer(data)
+    //  } else if (typeof data === 'number') {
+    //    script.writeOpCode(data)
+    //  } else if (data.chunks) {
+    //    script.writeScript(data)
+    //  }
+    //  
+    //  return script
+    //}, new Script())
+
+    return this.script.reduce((script, chunk) => {
+      let data = typeof chunk === 'function' ? chunk(...args) : chunk
       if (typeof data === 'undefined') return script;
 
-      if (Buffer.isBuffer(data)) {
+      if (data.buffer instanceof ArrayBuffer) {
         script.writeBuffer(data)
       } else if (typeof data === 'number') {
         script.writeOpCode(data)
@@ -164,23 +157,29 @@ class Cast {
    * @returns {Number}
    */
   getSize() {
-    const size = this.template.reduce((sum, p) => {
-      if (typeof p === 'undefined') return sum;
-      
-      let s
-      if (p.size) {
-        const _s = typeof p.size === 'function' ? p.size(this.params) : p.size
-        s = VarInt.fromNumber(_s).buf.length + _s
-      } else if (Buffer.isBuffer(p)) {
-        s = VarInt.fromNumber(p.length).buf.length + p.length
-      } else {
-        s = 1
-      }
+    let size
+    if (typeof this.size === 'function') {
+      size = this.size(this.params)
+    } else if (typeof this.size === 'number') {
+      size = this.size
+    } else {
+      // If no size prop is given on the cast, we must roughly estimate
+      console.warn("No 'size' prop given on the template. Size estimate may be innacurate.")
+      size = this.script.reduce((sum, chunk) => {
+        if (typeof chunk === 'function') {
+          // This is horrible. We have no idea how large the data will be so
+          // we just pluck a number out of thin air and say 20 bytes
+          sum += 21
+        } else if (chunk.buffer instanceof ArrayBuffer) {
+          sum += VarInt.fromNumber(chunk.length).buf.length + chunk.length
+        } else {
+          sum += 1
+        }
+        return sum
+      }, 0)
+    }
 
-      return sum + s
-    }, 0)
-
-    return size + VarInt.fromNumber(size).buf.length
+    return VarInt.fromNumber(size).buf.length + size
   }
 
   /**

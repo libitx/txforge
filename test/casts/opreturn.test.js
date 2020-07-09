@@ -10,8 +10,8 @@ describe('OpReturn.lockingScript', () => {
     cast = Cast.lockingScript(OpReturn, { satoshis: 0, data: ['hello world'] })
   })
 
-  it('template is correct length', () => {
-    assert.lengthOf(cast.template, 3)
+  it('script template is correct length', () => {
+    assert.lengthOf(cast.script, 3)
   })
 
   it('getSize() returns correct txOut size', () => {

@@ -2,9 +2,11 @@ import { assert } from 'chai'
 import bsv from 'bsv'
 import Cast from '../src/cast'
 
+
+const buf = Buffer.alloc(10)
 const casting = {
-  template: [ bsv.OpCode.OP_RETURN, { size: 10 }, { size: _ => 10 } ],
-  script(_) { return new bsv.Script() }
+  script: [ bsv.OpCode.OP_RETURN, buf, _ => new bsv.Script().fromBuffer(buf) ],
+  size: 23
 }
 
 

@@ -14,8 +14,8 @@ describe('P2PK.lockingScript', () => {
     cast = Cast.lockingScript(P2PK, { satoshis: 5000, pubKey })
   })
 
-  it('template is correct length', () => {
-    assert.lengthOf(cast.template, 2)
+  it('script template is correct length', () => {
+    assert.lengthOf(cast.script, 2)
   })
 
   it('getSize() returns correct txOut size', () => {
@@ -48,8 +48,8 @@ describe('P2PK.unlockingScript', () => {
     forge.build()
   })
 
-  it('template is correct length', () => {
-    assert.lengthOf(cast.template, 1)
+  it('script template is correct length', () => {
+    assert.lengthOf(cast.script, 1)
   })
 
   it('getSize() returns correct txOut size', () => {

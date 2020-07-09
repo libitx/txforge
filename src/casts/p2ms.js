@@ -13,29 +13,28 @@ const P2MS = {
    * TODO
    */
   lockingScript: {
-    template: [
+    script: [
       // thresholdOp
-      {
-        size: 1,
-        data: ({ threshold }) => threshold + OpCode.OP_1 - 1
-      },
+      ({ threshold }) => threshold + OpCode.OP_1 - 1,
+
       // pubKeys
-      {
-        size: ({ pubKeys }) => pubKeys.length * 33,
-        data({ pubKeys }) {
-          return pubKeys.reduce((script, pubKey) => {
-            script.writeBuffer(pubKey.toBuffer())
-            return script
-          }, new Script())
-        }
+      function({ pubKeys }) {
+        return pubKeys.reduce((script, pubKey) => {
+          script.writeBuffer(pubKey.toBuffer())
+          return script
+        }, new Script())
       },
+
       // pubKeysOp
-      {
-        size: 1,
-        data: ({ pubKeys }) => pubKeys.length + OpCode.OP_1 - 1
-      },
+      ({ pubKeys }) => pubKeys.length + OpCode.OP_1 - 1,
       OpCode.OP_CHECKMULTISIG
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size: ({ pubKeys }) => 2 + (pubKeys.length * 34),
 
     /**
      * TODO
@@ -55,30 +54,36 @@ const P2MS = {
    * TODO
    */
   unlockingScript: {
-    template: [
+    script: [
+      // 1. OP_0 required
       OpCode.OP_0,
-      // sigs
-      {
-        size: (params) => (params.keyPairs ? params.keyPairs.length : 2) * 73,
-        data(ctx, {
-          keyPairs,
-          sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
-          flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
-        }) {
-          const {tx, txOutNum, txOut} = ctx
-          const script = new Script()
-          // Iterrate over each of the locking script pubKeys
-          for (let i = 1; i < txOut.script.chunks.length-2; i++) {
-            let keyPair = keyPairs.find(k => {
-              return Buffer.compare(txOut.script.chunks[i].buf, k.pubKey.toBuffer()) === 0
-            })
-            const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
-            script.writeBuffer(sig.toTxFormat())
-          }
-          return script
+
+      // 2. Sigs
+      function(ctx, {
+        keyPairs,
+        sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
+        flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
+      }) {
+        const {tx, txOutNum, txOut} = ctx
+        const script = new Script()
+        // Iterrate over each of the locking script pubKeys
+        for (let i = 1; i < txOut.script.chunks.length-2; i++) {
+          let keyPair = keyPairs.find(k => {
+            return Buffer.compare(txOut.script.chunks[i].buf, k.pubKey.toBuffer()) === 0
+          })
+          const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+          script.writeBuffer(sig.toTxFormat())
         }
+        return script
       }
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size: (params) => 1 + ((params.keyPairs ? params.keyPairs.length : 2) * 73),
+    
 
     /**
      * TODO

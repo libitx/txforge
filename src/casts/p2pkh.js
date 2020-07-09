@@ -14,17 +14,24 @@ const P2PKH = {
    * TODO
    */
   lockingScript: {
-    template: [
+    script: [
+      // 1. OpCodes
       OpCode.OP_DUP,
       OpCode.OP_HASH160,
-      // pubKeyHash
-      {
-        size: 20,
-        data: ({ address }) => address.hashBuf
-      },
+
+      // 2. PubKeyHash
+      ({ address }) => address.hashBuf,
+
+      // 3. OpCodes
       OpCode.OP_EQUALVERIFY,
       OpCode.OP_CHECKSIG
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size: 25,
 
     validate(params) {
       if (!(params.address && params.address.hashBuf)) {
@@ -37,26 +44,27 @@ const P2PKH = {
    * TODO
    */
   unlockingScript: {
-    template: [
-      // sig
-      {
-        size: 72,
-        data(ctx, {
-          keyPair,
-          sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
-          flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
-        }) {
-          const {tx, txOutNum, txOut} = ctx
-          const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
-          return sig.toTxFormat()
-        }
+    script: [
+      // 1. Sig
+      function(ctx, {
+        keyPair,
+        sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
+        flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
+      }) {
+        const {tx, txOutNum, txOut} = ctx
+        const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+        return sig.toTxFormat()
       },
-      // pubKey
-      {
-        size: 33,
-        data: (_ctx, { keyPair }) => keyPair.pubKey.toBuffer()
-      }
+
+      // 2. PubKey
+      (_ctx, { keyPair }) => keyPair.pubKey.toBuffer()
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size: 107,
 
     validate(ctx, params) {
       if (!(params.keyPair && verifyKeyPair(params.keyPair, ctx.txOut))) {

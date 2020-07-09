@@ -13,14 +13,19 @@ const P2PK = {
    */
   lockingScript: {
     // TODO
-    template: [
-      // PubKey
-      {
-        size: 33,
-        data: ({ pubKey }) => pubKey.toBuffer()
-      },
+    script: [
+      // 1. PubKey
+      ({ pubKey }) => pubKey.toBuffer(),
+
+      // 2. OP_CHECKSIG
       OpCode.OP_CHECKSIG
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size: 35,
 
     /**
      * TODO
@@ -37,20 +42,24 @@ const P2PK = {
    * TODO
    */
   unlockingScript: {
-    template: [
-      {
-        size: 72,
-        data(ctx, {
-          keyPair,
-          sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
-          flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
-        }) {
-          const {tx, txOutNum, txOut} = ctx
-          const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
-          return sig.toTxFormat()
-        }
+    script: [
+      // 1. Sig
+      function(ctx, {
+        keyPair,
+        sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
+        flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
+      }) {
+        const {tx, txOutNum, txOut} = ctx
+        const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+        return sig.toTxFormat()
       }
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size: 73,
 
     /**
      * TODO

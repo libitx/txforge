@@ -14,12 +14,12 @@ describe('P2MS.lockingScript', () => {
     cast = Cast.lockingScript(P2MS, { satoshis: 5000, threshold: 2, pubKeys })
   })
 
-  it('template is correct length', () => {
-    assert.lengthOf(cast.template, 4)
+  it('script template is correct length', () => {
+    assert.lengthOf(cast.script, 4)
   })
 
   it('getSize() returns correct txOut size', () => {
-    assert.equal(cast.getSize(), 114)
+    assert.equal(cast.getSize(), 113)
   })
 
   it('getScript() returns P2MS locking script', () => {
@@ -57,12 +57,12 @@ describe('P2MS.unlockingScript', () => {
     forge.build()
   })
 
-  it('template is correct length', () => {
-    assert.lengthOf(cast.template, 2)
+  it('script template is correct length', () => {
+    assert.lengthOf(cast.script, 2)
   })
 
   it('getSize() returns correct txOut size', () => {
-    assert.equal(cast.getSize(), 189)
+    assert.equal(cast.getSize(), 188)
   })
 
   it('getScript() returns P2MS unlocking script', () => {

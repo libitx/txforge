@@ -197,7 +197,10 @@ class Forge {
 
     // Iterate over inputs and add placeholder unlockingScripts
     this.inputs.forEach(cast => {
-      const script = cast.getPlaceholderScript()
+      const size = cast.getSize() - 40,
+            buf = Buffer.alloc(size),
+            script = new Script().fromBuffer(buf)
+            
       this.tx.addTxIn(cast.txHashBuf, cast.txOutNum, script, cast.nSequence)
     })
 

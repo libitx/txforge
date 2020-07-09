@@ -206,7 +206,7 @@ describe('Forge#build()', () => {
     })
     assert.equal(forge.tx.toHex(), '01000000000000000000')
     forge.build()
-    assert.equal(forge.tx.toBuffer().length, 158)
+    assert.equal(forge.tx.toBuffer().length, 159)
   })
 
   it('builds the outputs into the tx', () => {

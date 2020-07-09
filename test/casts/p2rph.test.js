@@ -16,16 +16,16 @@ describe('P2RPH.lockingScript', () => {
     cast3 = Cast.lockingScript(P2RPH, { satoshis: 5000, type: 'PayToRSHA256', rBuf })
   })
 
-  it('template is correct length', () => {
-    assert.lengthOf(cast1.template, 13)
-    assert.lengthOf(cast2.template, 13)
-    assert.lengthOf(cast3.template, 13)
+  it('script template is correct length', () => {
+    assert.lengthOf(cast1.script, 13)
+    assert.lengthOf(cast2.script, 13)
+    assert.lengthOf(cast3.script, 13)
   })
 
   it('getSize() returns correct txOut size', () => {
-    assert.equal(cast1.getSize(), 43)
-    assert.equal(cast2.getSize(), 54)
-    assert.equal(cast3.getSize(), 55)
+    assert.equal(cast1.getSize(), 42)
+    assert.equal(cast2.getSize(), 53)
+    assert.equal(cast3.getSize(), 54)
   })
 
   it('getScript() returns P2RPH locking script', () => {
@@ -57,8 +57,8 @@ describe('P2RPH.unlockingScript', () => {
     forge.build()
   })
 
-  it('template is correct length', () => {
-    assert.lengthOf(cast.template, 2)
+  it('script template is correct length', () => {
+    assert.lengthOf(cast.script, 2)
   })
 
   it('getSize() returns correct txOut size', () => {

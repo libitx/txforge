@@ -1,6 +1,7 @@
 import {
   OpCode,
-  Script
+  Script,
+  VarInt
 } from 'bsv'
 
 /**
@@ -35,44 +36,46 @@ import {
 const OpReturn = {
   lockingScript: {
     // TODO
-    template: [
+    script: [
       // 1. OP_FALSE (if safe)
-      {
-        size: ({ safe = true }) => safe ? 1 : 0,
-        data: ({ safe = true }) => safe ? OpCode.OP_FALSE : undefined
-      },
+      ({ safe = true }) => safe ? OpCode.OP_FALSE : undefined,
 
       // 2. OP_RETURN
       OpCode.OP_RETURN,
 
       // 3. Arbitrary data
-      {
-        size(params) { return this.data(params).toBuffer().length },
-        data({ data }) {
-          // Iterates over data params and returns a Script instance
-          return data.reduce((script, item) => {
-            // Hex string
-            if (typeof item === 'string' && /^0x/i.test(item)) {
-              script.writeBuffer(Buffer.from(item.slice(2), 'hex'))
-            }
-            // Opcode number
-            else if (typeof item === 'number' || item === null) {
-              script.writeOpCode(Number.isInteger(item) ? item : 0)
-            }
-            // Opcode
-            else if (typeof item === 'object' && item.hasOwnProperty('op')) {
-              script.writeOpCode(item.op)
-            }
-            // All else
-            else {
-              script.writeBuffer(Buffer.from(item))
-            }
-            
-            return script
-          }, new Script())
-        }
+      function({ data }) {
+        // Iterates over data params and returns a Script instance
+        return data.reduce((script, item) => {
+          // Hex string
+          if (typeof item === 'string' && /^0x/i.test(item)) {
+            script.writeBuffer(Buffer.from(item.slice(2), 'hex'))
+          }
+          // Opcode number
+          else if (typeof item === 'number' || item === null) {
+            script.writeOpCode(Number.isInteger(item) ? item : 0)
+          }
+          // Opcode
+          else if (typeof item === 'object' && item.hasOwnProperty('op')) {
+            script.writeOpCode(item.op)
+          }
+          // All else
+          else {
+            script.writeBuffer(Buffer.from(item))
+          }
+          
+          return script
+        }, new Script())
       }
     ],
+
+    /**
+     * TODO
+     */
+    size(params) {
+      const scriptLen = this.getScript(params).toBuffer().length
+      return (params.safe ? 1 : 0) + 1 + VarInt.fromNumber(scriptLen).buf.length + scriptLen
+    },
 
     /**
      * Validates the given params

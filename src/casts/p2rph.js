@@ -23,7 +23,8 @@ const P2RPH = {
    * TODO
    */
   lockingScript: {
-    template: [
+    script: [
+      // 1. OpCodes
       OpCode.OP_OVER,
       OpCode.OP_3,
       OpCode.OP_SPLIT,
@@ -33,17 +34,25 @@ const P2RPH = {
       OpCode.OP_SWAP,
       OpCode.OP_SPLIT,
       OpCode.OP_DROP,
-      {
-        size: ({type = defaultRHash}) => RPuzzleTypes[type].op ? 1 : 0,
-        data: ({type = defaultRHash}) => RPuzzleTypes[type].op
-      },
-      {
-        size: ({type = defaultRHash}) => RPuzzleTypes[type].size,
-        data: ({ type = defaultRHash, rBuf }) => RPuzzleTypes[type].hash(rBuf)
-      },
+
+      // 2. Hash type OpCode
+      ({type = defaultRHash}) => RPuzzleTypes[type].op,
+
+      // 3. rBufHash
+      ({ type = defaultRHash, rBuf }) => RPuzzleTypes[type].hash(rBuf),
+
+      // 4. OpCodes
       OpCode.OP_EQUALVERIFY,
       OpCode.OP_CHECKSIG
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size({ type = defaultRHash }) {
+      return 12 + (RPuzzleTypes[type].op ? 1 : 0) + RPuzzleTypes[type].size
+    },
 
     /**
      * TODO
@@ -60,37 +69,38 @@ const P2RPH = {
    * TODO
    */
   unlockingScript: {
-    template: [
-      // sig
-      {
-        size: 72,
-        data(ctx, {
-          kBuf,
-          keyPair,
-          sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
-          flags = Interp.SCRIPT_VERIFY_MINIMALDATA | Interp.SCRIPT_ENABLE_SIGHASH_FORKID | Interp.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interp.SCRIPT_ENABLE_MONOLITH_OPCODES
-        }) {
-          const {tx, txOutNum, txOut} = ctx
-          const hashBuf = tx.sighash(sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
-          const sig = new Ecdsa()
-            .fromObject({
-              hashBuf,
-              keyPair,
-              endian: 'little',
-              k: Bn.fromBuffer(kBuf)
-            })
-            .sign().sig
-  
-          sig.fromObject({ nHashType: sighashType })
-          return sig.toTxFormat()
-        }
+    script: [
+      // 1. Sig
+      function(ctx, {
+        kBuf,
+        keyPair,
+        sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
+        flags = Interp.SCRIPT_VERIFY_MINIMALDATA | Interp.SCRIPT_ENABLE_SIGHASH_FORKID | Interp.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interp.SCRIPT_ENABLE_MONOLITH_OPCODES
+      }) {
+        const {tx, txOutNum, txOut} = ctx
+        const hashBuf = tx.sighash(sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+        const sig = new Ecdsa()
+          .fromObject({
+            hashBuf,
+            keyPair,
+            endian: 'little',
+            k: Bn.fromBuffer(kBuf)
+          })
+          .sign().sig
+
+        sig.fromObject({ nHashType: sighashType })
+        return sig.toTxFormat()
       },
-      // pubKey
-      {
-        size: 33,
-        data: (_ctx, { keyPair }) => keyPair.pubKey.toBuffer()
-      }
+
+      // 2. PubKey
+      (_ctx, { keyPair }) => keyPair.pubKey.toBuffer()
     ],
+
+    /**
+     * TODO
+     * @param {*} params
+     */
+    size: 107,
 
     /**
      * TODO
