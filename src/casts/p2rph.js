@@ -6,7 +6,6 @@ import {
   KeyPair,
   OpCode,
   Point,
-  Script,
   Sig
 } from 'bsv'
 
@@ -34,8 +33,14 @@ const P2RPH = {
       OpCode.OP_SWAP,
       OpCode.OP_SPLIT,
       OpCode.OP_DROP,
-      { name: 'hashOp', size: ({type = defaultRHash}) => RPuzzleTypes[type].op ? 1 : 0 },
-      { name: 'rHash', size: ({type = defaultRHash, rBuf}) => RPuzzleTypes[type].hash(rBuf).length },
+      {
+        size: ({type = defaultRHash}) => RPuzzleTypes[type].op ? 1 : 0,
+        data: ({type = defaultRHash}) => RPuzzleTypes[type].op
+      },
+      {
+        size: ({type = defaultRHash}) => RPuzzleTypes[type].size,
+        data: ({ type = defaultRHash, rBuf }) => RPuzzleTypes[type].hash(rBuf)
+      },
       OpCode.OP_EQUALVERIFY,
       OpCode.OP_CHECKSIG
     ],
@@ -44,26 +49,10 @@ const P2RPH = {
      * TODO
      * @param {*} params
      */
-    script({ type = defaultRHash, rBuf }) {
-      if (!rBuf || !Buffer.isBuffer(rBuf)) {
+    validate(params) {
+      if (!(params.rBuf && Buffer.isBuffer(params.rBuf))) {
         throw new Error('P2RPH lockingScript requires rBuf')
       }
-
-      type = RPuzzleTypes[type]
-
-      return this.template.reduce((script, part) => {
-        switch (part.name) {
-          case 'hashOp':
-            if (type.op) script.writeOpCode(type.op)
-            break
-          case 'rHash':
-            script.writeBuffer(type.hash(rBuf))
-            break
-          default:
-            script.writeOpCode(part)
-        }
-        return script
-      }, new Script())
     }
   },
 
@@ -72,58 +61,49 @@ const P2RPH = {
    */
   unlockingScript: {
     template: [
-      { name: 'sig', size: 72 },
-      { name: 'pubKey', size: 33 }
-    ],
+      // sig
+      {
+        size: 72,
+        data(ctx, {
+          kBuf,
+          keyPair,
+          sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
+          flags = Interp.SCRIPT_VERIFY_MINIMALDATA | Interp.SCRIPT_ENABLE_SIGHASH_FORKID | Interp.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interp.SCRIPT_ENABLE_MONOLITH_OPCODES
+        }) {
+          const {tx, txOutNum, txOut} = ctx
+          const hashBuf = tx.sighash(sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+          const sig = new Ecdsa()
+            .fromObject({
+              hashBuf,
+              keyPair,
+              endian: 'little',
+              k: Bn.fromBuffer(kBuf)
+            })
+            .sign().sig
   
+          sig.fromObject({ nHashType: sighashType })
+          return sig.toTxFormat()
+        }
+      },
+      // pubKey
+      {
+        size: 33,
+        data: (_ctx, { keyPair }) => keyPair.pubKey.toBuffer()
+      }
+    ],
+
     /**
      * TODO
-     * @param {Forge} forge 
-     * @param {Object} signParams 
      */
-    script(forge, {
-      kBuf,
-      keyPair,
-      sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
-      flags = Interp.SCRIPT_VERIFY_MINIMALDATA | Interp.SCRIPT_ENABLE_SIGHASH_FORKID | Interp.SCRIPT_ENABLE_MAGNETIC_OPCODES | Interp.SCRIPT_ENABLE_MONOLITH_OPCODES
-    } = sigOpts) {
-      const tx = forge.tx,
-            vin = forge.inputs.indexOf(this),
-            txOut = this.txOut
-      
-      // Validations
-      if (vin < 0) throw new Error('Input cast not found')
-      if (!kBuf || !verifyKBuf(kBuf, txOut)) {
+    setup({ keyPair }) {
+      if (!keyPair) keyPair = KeyPair.fromRandom()
+      return { keyPair }
+    },
+
+    validate(ctx, params) {
+      if (!(params.kBuf && verifyKBuf(params.kBuf, ctx.txOut))) {
         throw new Error('P2RPH unlockingScript requires valid kBuf')
       }
-  
-      if (!keyPair) keyPair = KeyPair.fromRandom()
-  
-      return this.template.reduce((script, part) => {
-        switch(part.name) {
-          case 'sig':
-            const hashBuf = tx.sighash(sighashType, vin, txOut.script, txOut.valueBn, flags)
-            const sig = new Ecdsa()
-              .fromObject({
-                hashBuf,
-                keyPair,
-                endian: 'little',
-                k: Bn.fromBuffer(kBuf)
-              })
-              .sign().sig
-    
-            sig.fromObject({ nHashType: sighashType })
-            script.writeBuffer(sig.toTxFormat())
-            break
-
-          case 'pubKey':
-            script.writeBuffer(keyPair.pubKey.toBuffer())
-            break
-        }
-        return script
-      }, new Script())
-  
-      return script
     }
   }
 }
@@ -133,27 +113,32 @@ const P2RPH = {
 const RPuzzleTypes = {
   PayToRHASH160: {
     op: OpCode.OP_HASH160,
-    hash: Hash.sha256Ripemd160
+    hash: Hash.sha256Ripemd160,
+    size: 20
   },
   PayToRRIPEMD160: {
     op: OpCode.OP_RIPEMD160,
-    hash: Hash.ripemd160
+    hash: Hash.ripemd160,
+    size: 20
   },
   PayToRSHA256: {
     op: OpCode.OP_SHA256,
-    hash: Hash.sha256
+    hash: Hash.sha256,
+    size: 32
   },
   PayToRHASH256: {
     op: OpCode.OP_HASH256,
-    hash: Hash.sha256Sha256
+    hash: Hash.sha256Sha256,
+    size: 32
   },
   PayToRSHA1: {
     op: OpCode.OP_SHA1,
-    hash: Hash.sha1
+    hash: Hash.sha1,
+    size: 20
   },
   PayToR: {
-    op: false,
-    hash: (r) => { return r }
+    hash: (r) => { return r },
+    size: 32
   }
 }
 

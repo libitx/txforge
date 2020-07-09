@@ -18,19 +18,19 @@ describe('P2PKH.lockingScript', () => {
     assert.lengthOf(cast.template, 5)
   })
 
-  it('size() returns correct txOut size', () => {
-    assert.equal(cast.size(), 34)
+  it('getSize() returns correct txOut size', () => {
+    assert.equal(cast.getSize(), 34)
   })
 
-  it('script() returns P2PKH locking script', () => {
-    const script = cast.script(cast.params)
+  it('getScript() returns P2PKH locking script', () => {
+    const script = cast.getScript(cast.params)
     assert.lengthOf(script.chunks, 5)
     assert.deepEqual(script.chunks[2].buf, address.hashBuf)
   })
 
-  it('script() throws error if no address', () => {
+  it('getScript() throws error if no address', () => {
     cast = Cast.lockingScript(P2PKH, { satoshis: 5000 })
-    assert.throws(_ => cast.script(cast.params), 'P2PKH lockingScript requires address')
+    assert.throws(_ => cast.getScript(cast.params), 'P2PKH lockingScript requires address')
   })
 })
 
@@ -52,18 +52,18 @@ describe('P2PKH.unlockingScript', () => {
     assert.lengthOf(cast.template, 2)
   })
 
-  it('size() returns correct txOut size', () => {
-    assert.equal(cast.size(), 148)
+  it('getSize() returns correct txOut size', () => {
+    assert.equal(cast.getSize(), 148)
   })
 
-  it('script() returns P2PKH unlocking script', () => {
-    const script = cast.script(forge, { keyPair })
+  it('getScript() returns P2PKH unlocking script', () => {
+    const script = cast.getScript(forge, { keyPair })
     assert.lengthOf(script.chunks, 2)
     assert.deepEqual(script.chunks[1].buf, keyPair.pubKey.toBuffer())
   })
 
-  it('script() throws error when incorrect keyPair', () => {
+  it('getScript() throws error when incorrect keyPair', () => {
     const keyPair = bsv.KeyPair.fromRandom()
-    assert.throws(_ => cast.script(forge, { keyPair }), 'P2PKH unlockingScript requires valid keyPair')
+    assert.throws(_ => cast.getScript(forge, { keyPair }), 'P2PKH unlockingScript requires valid keyPair')
   })
 })

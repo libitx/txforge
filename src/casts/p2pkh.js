@@ -1,10 +1,10 @@
 import {
   Address,
   OpCode,
-  Script,
   Sig,
   Tx
 } from 'bsv'
+
 
 /**
  * TODO
@@ -14,35 +14,22 @@ const P2PKH = {
    * TODO
    */
   lockingScript: {
-    // TODO
     template: [
       OpCode.OP_DUP,
       OpCode.OP_HASH160,
-      { name: 'pubKeyHash', size: 20 },
+      // pubKeyHash
+      {
+        size: 20,
+        data: ({ address }) => address.hashBuf
+      },
       OpCode.OP_EQUALVERIFY,
       OpCode.OP_CHECKSIG
     ],
 
-    /**
-     * TODO
-     * @param {Object} params 
-     */
-    script({ address }) {
-      if (!(address && address.hashBuf)) {
+    validate(params) {
+      if (!(params.address && params.address.hashBuf)) {
         throw new Error('P2PKH lockingScript requires address')
       }
-
-      return this.template.reduce((script, part) => {
-        switch (part.name) {
-          case 'pubKeyHash':
-            script.writeBuffer(address.hashBuf)
-            break
-          default:
-            script.writeOpCode(part)
-        }
-        
-        return script
-      }, new Script())
     }
   },
 
@@ -51,49 +38,34 @@ const P2PKH = {
    */
   unlockingScript: {
     template: [
-      { name: 'sig', size: 72 },
-      { name: 'pubKey', size: 33 }
+      // sig
+      {
+        size: 72,
+        data(ctx, {
+          keyPair,
+          sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
+          flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
+        }) {
+          const {tx, txOutNum, txOut} = ctx
+          const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+          return sig.toTxFormat()
+        }
+      },
+      // pubKey
+      {
+        size: 33,
+        data: (_ctx, { keyPair }) => keyPair.pubKey.toBuffer()
+      }
     ],
-  
-    /**
-     * TODO
-     * 
-     * @param {Forge} forge Forge instance
-     * @param {Object} params scriptSig params 
-     * @returns {Script}
-     */
-    script(forge, {
-      keyPair,
-      sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
-      flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
-    }) {
-      const tx = forge.tx,
-            vin = forge.inputs.indexOf(this),
-            txOut = this.txOut
-  
-      // Validations
-      if (vin < 0) throw new Error('Input cast not found')
-      if (!keyPair || !verifyKeyPair(keyPair, txOut)) {
+
+    validate(ctx, params) {
+      if (!(params.keyPair && verifyKeyPair(params.keyPair, ctx.txOut))) {
         throw new Error('P2PKH unlockingScript requires valid keyPair')
       }
-  
-      // Iterrate over template and create scriptSig
-      return this.template.reduce((script, part) => {
-        switch (part.name) {
-          case 'sig':
-            const sig = tx.sign(keyPair, sighashType, vin, txOut.script, txOut.valueBn, flags)
-            script.writeBuffer(sig.toTxFormat())
-            break
-          case 'pubKey':
-            script.writeBuffer(keyPair.pubKey.toBuffer())
-            break
-        }
-        
-        return script
-      }, new Script())
     }
   }
 }
+
 
 // TODO
 function verifyKeyPair(keyPair, { script }) {

@@ -19,11 +19,14 @@ class Cast {
    * @param {Object} cast Cast template object
    * @constructor
    */
-  constructor({script, template} = {}) {
+  constructor({template, setup, validate} = {}) {
     // Set template and script
     this.template = template || []
-    if (script && typeof script === 'function') {
-      this.script = script
+    if (setup && typeof setup === 'function') {
+      this.setup = setup
+    }
+    if (validate && typeof validate === 'function') {
+      this.validate = validate
     }
   }
 
@@ -77,12 +80,60 @@ class Cast {
   }
 
   /**
+   * Returns a placeholder script, with signatures and dynamic push datas zeroed
+   * out.
+   * 
+   * @returns {Script}
+   */
+  getPlaceholderScript() {
+    return this.template.reduce((script, p) => {
+      if (p.size) {
+        const size = typeof p.size === 'function' ? p.size(this.params) : p.size
+        const buf = Buffer.alloc(size)
+        script.writeBuffer(buf)
+      } else if (Buffer.isBuffer(p)) {
+        script.writeBuffer(p)
+      } else {
+        script.writeOpCode(p)
+      }
+      
+      return script
+    }, new Script())
+  }
+
+  /**
    * Returns the generated scriptSig. Must be defined in the Cast template.
    * 
    * @returns {Script}
    */
-  script() {
-    throw new Error('Cast created with no script() function')
+  getScript(ctx, params) {
+    let args
+    if (typeof params === 'undefined') {
+      params = { ...this.params, ...ctx }
+      params = { ...params, ...this.setup(params) }
+      args = [params]
+    } else {
+      params = { ...this.params, ...params }
+      params = { ...params, ...this.setup(params) }
+      args = [ctx, params]
+    }
+
+    this.validate(...args)
+
+    return this.template.reduce((script, p) => {
+      let data = typeof p.data === 'function' ? p.data(...args) : p
+      if (typeof data === 'undefined') return script;
+
+      if (Buffer.isBuffer(data)) {
+        script.writeBuffer(data)
+      } else if (typeof data === 'number') {
+        script.writeOpCode(data)
+      } else if (data.chunks) {
+        script.writeScript(data)
+      }
+      
+      return script
+    }, new Script())
   }
 
   /**
@@ -90,22 +141,38 @@ class Cast {
    * 
    * @returns {Number}
    */
-  size() {
-    const s = this.template.reduce((sum, p) => {
+  getSize() {
+    const size = this.template.reduce((sum, p) => {
       if (typeof p === 'undefined') return sum;
       
-      let size
+      let s
       if (p.size) {
         const _s = typeof p.size === 'function' ? p.size(this.params) : p.size
-        size = VarInt.fromNumber(_s).buf.length + _s
+        s = VarInt.fromNumber(_s).buf.length + _s
       } else if (Buffer.isBuffer(p)) {
-        size = VarInt.fromNumber(p.length).buf.length + p.length
+        s = VarInt.fromNumber(p.length).buf.length + p.length
       } else {
-        size = 1
+        s = 1
       }
-      return sum + size
+
+      return sum + s
     }, 0)
-    return VarInt.fromNumber(s).buf.length + s
+
+    return size + VarInt.fromNumber(size).buf.length
+  }
+
+  /**
+   * TODO
+   */
+  setup() {
+    // noop
+  }
+
+  /**
+   * TODO
+   */
+  validate() {
+    // noop
   }
 }
 
@@ -151,8 +218,8 @@ class LockingScript extends Cast {
   /**
    * TODO
    */
-  size() {
-    return super.size() + 8 // satoshis (8)
+  getSize() {
+    return super.getSize() + 8 // satoshis (8)
   }
 }
 
@@ -187,32 +254,21 @@ class UnlockingScript extends Cast {
   }
 
   /**
-   * Returns a placeholder script, with signatures and dynamic push datas zeroed
-   * out.
-   * 
-   * @returns {Script}
+   * TODO
    */
-  placeholder() {
-    return this.template.reduce((script, part) => {
-      if (part.size) {
-        const size = typeof part.size === 'function' ? part.size(this.params) : part.size
-        const buf = Buffer.alloc(size)
-        script.writeBuffer(buf)
-      } else if (Buffer.isBuffer(part)) {
-        script.writeBuffer(part)
-      } else {
-        script.writeOpCode(part)
-      }
-      
-      return script
-    }, new Script())
+  getSize() {
+    return super.getSize() + 40 // txid (32), vout (4), nSquence (4)
   }
 
   /**
    * TODO
    */
-  size() {
-    return super.size() + 40 // txid (32), vout (4), nSquence (4)
+  getScript(forge, params) {
+    const tx = forge.tx,
+          txOutNum = forge.inputs.indexOf(this),
+          txOut = this.txOut
+    
+    return super.getScript({ tx, txOutNum, txOut}, params)
   }
 }
 

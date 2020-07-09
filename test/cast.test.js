@@ -15,20 +15,16 @@ describe('new Cast()', () => {
     cast2 = new Cast(casting)
   })
 
-  it('size() returns 1 when blank cast', () => {
-    assert.equal(cast1.size(), 1)
+  it('getSize() returns 1 when blank cast', () => {
+    assert.equal(cast1.getSize(), 1)
   })
 
-  it('size() calculates size when template given', () => {
-    assert.equal(cast2.size(), 24)
+  it('getSize() calculates size when template given', () => {
+    assert.equal(cast2.getSize(), 24)
   })
 
-  it('script() throws error when blank cast', () => {
-    assert.throws(_ => cast1.script(), 'Cast created with no script() function')
-  })
-
-  it('script() returns a value when callback given', () => {
-    assert.instanceOf(cast2.script(), bsv.Script)
+  it('getScript() returns a value when callback given', () => {
+    assert.instanceOf(cast2.getScript(), bsv.Script)
   })
 })
 

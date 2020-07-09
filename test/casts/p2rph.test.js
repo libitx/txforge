@@ -22,24 +22,24 @@ describe('P2RPH.lockingScript', () => {
     assert.lengthOf(cast3.template, 13)
   })
 
-  it('size() returns correct txOut size', () => {
-    assert.equal(cast1.size(), 43)
-    assert.equal(cast2.size(), 54)
-    assert.equal(cast3.size(), 55)
+  it('getSize() returns correct txOut size', () => {
+    assert.equal(cast1.getSize(), 43)
+    assert.equal(cast2.getSize(), 54)
+    assert.equal(cast3.getSize(), 55)
   })
 
-  it('script() returns P2RPH locking script', () => {
-    const script1 = cast1.script(cast1.params)
-    const script2 = cast2.script(cast2.params)
+  it('getScript() returns P2RPH locking script', () => {
+    const script1 = cast1.getScript(cast1.params)
+    const script2 = cast2.getScript(cast2.params)
     assert.lengthOf(script1.chunks, 13)
     assert.lengthOf(script2.chunks, 12)
     assert.deepEqual(script1.chunks[10].buf, bsv.Hash.sha256Ripemd160(rBuf))
     assert.deepEqual(script2.chunks[9].buf, rBuf)
   })
 
-  it('script() throws error if no rBuf', () => {
+  it('getScript() throws error if no rBuf', () => {
     const cast = Cast.lockingScript(P2RPH, { satoshis: 5000 })
-    assert.throws(_ => cast.script(cast.params), 'P2RPH lockingScript requires rBuf')
+    assert.throws(_ => cast.getScript(cast.params), 'P2RPH lockingScript requires rBuf')
   })
 })
 
@@ -61,24 +61,24 @@ describe('P2RPH.unlockingScript', () => {
     assert.lengthOf(cast.template, 2)
   })
 
-  it('size() returns correct txOut size', () => {
-    assert.equal(cast.size(), 148)
+  it('getSize() returns correct txOut size', () => {
+    assert.equal(cast.getSize(), 148)
   })
 
-  it('script() returns P2RPH unlocking script', () => {
-    const script = cast.script(forge, { kBuf })
+  it('getScript() returns P2RPH unlocking script', () => {
+    const script = cast.getScript(forge, { kBuf })
     assert.lengthOf(script.chunks, 2)
   })
 
-  it('script() signs with given keyPair', () => {
+  it('getScript() signs with given keyPair', () => {
     const keyPair = bsv.KeyPair.fromRandom()
-    const script = cast.script(forge, { kBuf, keyPair })
+    const script = cast.getScript(forge, { kBuf, keyPair })
     assert.lengthOf(script.chunks, 2)
     assert.deepEqual(script.chunks[1].buf, keyPair.pubKey.toBuffer())
   })
 
-  it('script() throws error when incorrect kBuf', () => {
+  it('getScript() throws error when incorrect kBuf', () => {
     const kBuf = bsv.Random.getRandomBuffer(32)
-    assert.throws(_ => cast.script(forge, { kBuf }), 'P2RPH unlockingScript requires valid kBuf')
+    assert.throws(_ => cast.getScript(forge, { kBuf }), 'P2RPH unlockingScript requires valid kBuf')
   })
 })

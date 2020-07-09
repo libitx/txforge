@@ -18,12 +18,12 @@ describe('P2MS.lockingScript', () => {
     assert.lengthOf(cast.template, 4)
   })
 
-  it('size() returns correct txOut size', () => {
-    assert.equal(cast.size(), 114)
+  it('getSize() returns correct txOut size', () => {
+    assert.equal(cast.getSize(), 114)
   })
 
-  it('script() returns P2MS locking script', () => {
-    const script = cast.script(cast.params)
+  it('getScript() returns P2MS locking script', () => {
+    const script = cast.getScript(cast.params)
     assert.lengthOf(script.chunks, 6)
     assert.equal(script.chunks[0].opCodeNum, bsv.OpCode.OP_2)
     assert.deepEqual(script.chunks[1].buf, keyPairs[0].pubKey.toBuffer())
@@ -32,14 +32,14 @@ describe('P2MS.lockingScript', () => {
     assert.equal(script.chunks[4].opCodeNum, bsv.OpCode.OP_3)
   })
 
-  it('script() throws error if no threshold', () => {
+  it('getScript() throws error if no threshold', () => {
     cast = Cast.lockingScript(P2MS, { satoshis: 5000, pubKeys })
-    assert.throws(_ => cast.script(cast.params), 'P2MS lockingScript requires threshold')
+    assert.throws(_ => cast.getScript(cast.params), 'P2MS lockingScript requires threshold')
   })
 
-  it('script() throws error if no pubKeys', () => {
+  it('getScript() throws error if no pubKeys', () => {
     cast = Cast.lockingScript(P2MS, { satoshis: 5000, threshold: 2 })
-    assert.throws(_ => cast.script(cast.params), 'P2MS lockingScript requires pubKeys')
+    assert.throws(_ => cast.getScript(cast.params), 'P2MS lockingScript requires pubKeys')
   })
 })
 
@@ -61,20 +61,20 @@ describe('P2MS.unlockingScript', () => {
     assert.lengthOf(cast.template, 2)
   })
 
-  it('size() returns correct txOut size', () => {
-    assert.equal(cast.size(), 189)
+  it('getSize() returns correct txOut size', () => {
+    assert.equal(cast.getSize(), 189)
   })
 
-  it('script() returns P2MS unlocking script', () => {
-    const script = cast.script(forge, { keyPairs })
+  it('getScript() returns P2MS unlocking script', () => {
+    const script = cast.getScript(forge, { keyPairs })
     assert.lengthOf(script.chunks, 4)
     assert.isTrue(bsv.Sig.IsTxDer(script.chunks[1].buf))
     assert.isTrue(bsv.Sig.IsTxDer(script.chunks[2].buf))
     assert.isTrue(bsv.Sig.IsTxDer(script.chunks[3].buf))
   })
 
-  it('script() throws error when incorrect keyPair', () => {
+  it('getScript() throws error when incorrect keyPair', () => {
     const keyPairs = [bsv.KeyPair.fromRandom()]
-    assert.throws(_ => cast.script(forge, { keyPairs }), 'P2MS unlockingScript keyPairs must match lockingScript pubKeys')
+    assert.throws(_ => cast.getScript(forge, { keyPairs }), 'P2MS unlockingScript keyPairs must match lockingScript pubKeys')
   })
 })

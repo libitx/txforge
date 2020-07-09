@@ -1,7 +1,5 @@
 import {
-  Address,
   OpCode,
-  Script,
   Sig,
   Tx
 } from 'bsv'
@@ -16,7 +14,11 @@ const P2PK = {
   lockingScript: {
     // TODO
     template: [
-      { name: 'pubKey', size: 33 },
+      // PubKey
+      {
+        size: 33,
+        data: ({ pubKey }) => pubKey.toBuffer()
+      },
       OpCode.OP_CHECKSIG
     ],
 
@@ -24,22 +26,10 @@ const P2PK = {
      * TODO
      * @param {Object} params 
      */
-    script({ pubKey }) {
-      if (!(pubKey && pubKey.point)) {
+    validate(params) {
+      if (!(params.pubKey && params.pubKey.point)) {
         throw new Error('P2PK lockingScript requires pubKey')
       }
-
-      return this.template.reduce((script, part) => {
-        switch (part.name) {
-          case 'pubKey':
-            script.writeBuffer(pubKey.toBuffer())
-            break
-          default:
-            script.writeOpCode(part)
-        }
-        
-        return script
-      }, new Script())
     }
   },
 
@@ -48,39 +38,32 @@ const P2PK = {
    */
   unlockingScript: {
     template: [
-      { name: 'sig', size: 72 }
+      {
+        size: 72,
+        data(ctx, {
+          keyPair,
+          sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
+          flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
+        }) {
+          const {tx, txOutNum, txOut} = ctx
+          const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+          return sig.toTxFormat()
+        }
+      }
     ],
-  
+
     /**
      * TODO
-     * 
-     * @param {Forge} forge Forge instance
-     * @param {Object} params scriptSig params 
-     * @returns {Script}
+     * @param {Object} params 
      */
-    script(forge, {
-      keyPair,
-      sighashType = Sig.SIGHASH_ALL | Sig.SIGHASH_FORKID,
-      flags = Tx.SCRIPT_ENABLE_SIGHASH_FORKID
-    }) {
-      const tx = forge.tx,
-            vin = forge.inputs.indexOf(this),
-            txOut = this.txOut,
-            script = new Script()
-  
-      // Validations
-      if (vin < 0) throw new Error('Input cast not found')
-      if (!keyPair || !verifyKeyPair(keyPair, txOut)) {
+    validate(ctx, params) {
+      if (!params.keyPair || !verifyKeyPair(params.keyPair, ctx.txOut)) {
         throw new Error('P2PK unlockingScript requires valid keyPair')
       }
-
-      const sig = tx.sign(keyPair, sighashType, vin, txOut.script, txOut.valueBn, flags)
-      script.writeBuffer(sig.toTxFormat())
-
-      return script
     }
   }
 }
+
 
 // TODO
 function verifyKeyPair(keyPair, { script }) {
