@@ -8,7 +8,7 @@ TxForge is a modern Bitcoin transaction builder, built on top of [bsv2](https://
 
 * Simple declarative API for composing transactions
 * Future-proofed. Built on top of `bsv2` and with ES modules.
-* Can be used for building **any** type of transaction with the power of [casts](#todo).
+* Can be used for building **any** type of transaction with the power of [Casts](#introducing-casts).
 * Robust and solidly tested library
 
 ## Getting started
@@ -33,7 +33,7 @@ TxForge has a peer dependency on **version 2** the `bsv` library which must also
 
 ### Simple example
 
-Whilst TxForge can be used to build complex transactions, for simple and common usecases such as sending a `P2PKH` payment or data output, TxForge has sensible defaults that makes this painless:
+Whilst TxForge can be used to build complex transactions, for simple and common use cases such as sending a `P2PKH` payment or data output, TxForge has sensible defaults that makes this painless:
 
 ```javascript
 import { Forge } from 'txforge'
@@ -79,9 +79,9 @@ A Cast is an abstraction over input and output scripts, that provides a way for 
 
 Lets look at some examples.
 
-### So, you want R-Puzzle's, huh?
+### So, you want R-Puzzles, huh?
 
-TxForge ships with a `P2RPH` (Pay to R-Puzzle Hash) Cast. The approach for R-Puzzles is pulled directly from Dean Little's superb [rpuzzle](#todo) library (much respect - I learnt a lot from reading this code).
+TxForge ships with a `P2RPH` (Pay to R-Puzzle Hash) Cast. The approach for R-Puzzles is pulled directly from Dean Little's superb [rpuzzle](https://github.com/deanmlittle/rpuzzle) library (much respect - I learnt a lot from reading this code).
 
 To create and redeem an R-Puzzle, you will need to know your K value and R value. TxForge doesn't provide a way to generate these, it assumes you have them already. Look at Dean's code if you want examples of how to do this.
 
@@ -107,7 +107,7 @@ forge1
   .buld()
   .sign({ keyPair })
 
-// After we've broadcast the above tranaction, we can unlock and spend
+// After we've broadcast the above transaction, we can unlock and spend
 // the R-Puzzle
 const forge2 = new Forge({
   inputs: [
@@ -152,7 +152,7 @@ forge1
   .buld()
   .sign({ keyPair })
 
-// OK, once broadcasted we can spend both inputs in the same transaction
+// OK, once broadcast we can spend both inputs in the same transaction
 const forge2 = new Forge({
   inputs: [
     Cast.unlockingScript(P2MS, utxo1),
@@ -173,7 +173,7 @@ Depending on the Cast, it is also possible to give other advanced signing params
 
 ### So, you want to create your own Cast, huh?
 
-Bitcoin's scripting language is rich and diverse and allows developers to craft any number of new innovative transaction types. The five Casts this library ships with today will barely scratch the surface of the different transaction types on an un-f*ckened Bitcoin soon.
+Bitcoin's scripting language is rich and diverse and allows developers to craft any number of new innovative transaction types. The five Casts this library ships with today will barely scratch the surface of the different transaction types on an un-f\*ckened Bitcoin soon.
 
 Developers can create their own Casts, which they can either keep within their own organisation and private codebase, or distribute and share with other developers. By creating a Cast, your complex and custom transactions can be created and redeemed with the same simplicity shown in the examples above.
 
@@ -186,7 +186,7 @@ const MyCast = {
 
   lockingScript: {
     // `script` must be an array of data items that will make up the Script.
-    // Each elemant can either be an OpCode, Buffer, or a function.
+    // Each element can either be an OpCode, Buffer, or a function.
     // When the element is a function, it is called with the params that are
     // given when the unlockingScript cast is created.
     script: [
@@ -218,7 +218,7 @@ const MyCast = {
   },
 
   // The unlockingScript side of things works in much the same way but there is
-  // a crucial difference. Each of the functions in `script` recieve two
+  // a crucial difference. Each of the functions in `script` receive two
   // variables. The first `ctx` is a context object containing the bsv Tx and 
   // TxOut objects, as well as the TxOutNum value.
   unlockingScript: {
@@ -238,12 +238,12 @@ const MyCast = {
 
     size: 107,
 
-    // Notice that `setup` does not recieve the ctx
+    // Notice that `setup` does not receive the ctx
     setup(params) {
       return { foo: 'bar' }
     },
 
-    // But `validate` does recieve the ctx, allowing us to validate the parameters
+    // But `validate` does receive the ctx, allowing us to validate the parameters
     // against the context transaction.
     validate(ctx, params) {
       if (!(params.keyPair && verifyKeyPair(params.keyPair, ctx.txOut))) {
@@ -254,4 +254,15 @@ const MyCast = {
 }
 ```
 
-More...
+To learn more about how Casts work, read through the source code in the example the this repository:
+
+* [P2MS - Pay to Multisig](https://github.com/libitx/txforge/blob/master/src/casts/p2ms.js)
+* [P2PK - Pay to PubKey](https://github.com/libitx/txforge/blob/master/src/casts/p2pk.js)
+* [P2PKH - Pay to PubKeyHash](https://github.com/libitx/txforge/blob/master/src/casts/p2pkh.js)
+* [P2RPH - Pay to R-Puzzle Hash](https://github.com/libitx/txforge/blob/master/src/casts/p2rph.js)
+
+## License
+
+TxForge is open source and released under the [Apache-2 License](https://github.com/libitx/txforge/blob/master/LICENSE).
+
+Copyright (c) 2020 libitx.
