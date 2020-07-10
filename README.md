@@ -1,5 +1,7 @@
 # TxForge
 
+![Modern Bitcoin transaction builder](https://github.com/libitx/txforge/raw/master/media/poster.png)
+
 ![npm](https://img.shields.io/npm/v/txforge?color=informational)
 ![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
 ![Build Status](https://img.shields.io/github/workflow/status/libitx/txforge/Node.js%20CI)
@@ -33,7 +35,7 @@ TxForge has a peer dependency on **version 2** the `bsv` library which must also
 
 **Note for Node users**
 
-TxForge is developed using ES modules. Therefore, depending on whether you version of Node is happy with ES modules, pay attention to the following:
+TxForge is developed using ES modules. Therefore, depending on whether your platform is happy with ES modules, pay attention to the following:
 
 ```javascript
 // 🥳 Cutting edge node, ES modules all the way...
@@ -45,7 +47,7 @@ const { Forge, Cast } = require('txforge')
 const { P2RPH = require('txforge/dist/txforge.casts.js') // <-- 👀
 ```
 
-### Simple example
+## Simple example
 
 Whilst TxForge can be used to build complex transactions, for simple and common use cases such as sending a `P2PKH` payment or data output, TxForge has sensible defaults that makes this painless:
 
@@ -85,7 +87,7 @@ forge
 console.log(forge.tx.toHex())
 ```
 
-### Introducing Casts
+## Introducing Casts
 
 The above example is all well and good, but there are already libraries that do this for us. What makes TxForge different, and very powerful, are **Casts**.
 
