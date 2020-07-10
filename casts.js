@@ -1,3 +1,6 @@
-import * as casts from './src/casts'
+// Entry for rollup
+// If needed, attach Buffer to window scope
+import { Buffer } from 'buffer'
+if (!(window && window.Buffer)) window.Buffer = Buffer
 
-export default casts
+export * from './src/casts'

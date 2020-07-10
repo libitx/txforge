@@ -3,7 +3,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
 import { terser } from 'rollup-plugin-terser'
 import banner from 'rollup-plugin-banner'
-import merge from 'deepmerge'
+import nodePolyfills from 'rollup-plugin-node-polyfills'
 
 export default [
   // Production build
@@ -21,6 +21,7 @@ export default [
     plugins: [
       resolve({ browser: true }),
       commonjs(),
+      nodePolyfills(),
       babel({
         exclude: 'node_modules/**',
         babelHelpers: 'bundled'
@@ -50,6 +51,7 @@ export default [
     plugins: [
       resolve({ browser: true }),
       commonjs(),
+      nodePolyfills(),
       babel({
         exclude: 'node_modules/**',
         babelHelpers: 'bundled'
@@ -80,6 +82,7 @@ export default [
     plugins: [
       resolve({ browser: true }),
       commonjs(),
+      nodePolyfills(),
       babel({
         exclude: 'node_modules/**',
         babelHelpers: 'bundled'
@@ -102,6 +105,7 @@ export default [
     plugins: [
       resolve({ browser: true }),
       commonjs(),
+      nodePolyfills(),
       babel({
         exclude: 'node_modules/**',
         babelHelpers: 'bundled'

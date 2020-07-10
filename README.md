@@ -31,6 +31,20 @@ Alternatively use in a browser via CSN:
 
 TxForge has a peer dependency on **version 2** the `bsv` library which must also be available in your project.
 
+**Note for Node users**
+
+TxForge is developed using ES modules. Therefore, depending on whether you version of Node is happy with ES modules, pay attention to the following:
+
+```javascript
+// 🥳 Cutting edge node, ES modules all the way...
+import { Forge, Cast } from 'txforge'
+import { P2RPH } from 'txforge/casts'
+
+// 😿 Oh no Node doesn't like ES modules...
+const { Forge, Cast } = require('txforge')
+const { P2RPH = require('txforge/dist/txforge.casts.js') // <-- 👀
+```
+
 ### Simple example
 
 Whilst TxForge can be used to build complex transactions, for simple and common use cases such as sending a `P2PKH` payment or data output, TxForge has sensible defaults that makes this painless:
