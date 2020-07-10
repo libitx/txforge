@@ -1,6 +1,6 @@
 # TxForge
 
-![Modern Bitcoin transaction builder](https://github.com/libitx/txforge/raw/master/media/poster.png)
+![Modern Bitcoin transaction builder](https://github.com/libitx/txforge/raw/master/media/poster.jpg)
 
 ![npm](https://img.shields.io/npm/v/txforge?color=informational)
 ![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
