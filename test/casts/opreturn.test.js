@@ -1,13 +1,13 @@
 import { assert } from 'chai'
 import bsv from 'bsv'
 import Cast from '../../src/cast'
-import { OpReturn } from '../../src/casts'
+import { OP_RETURN } from '../../src/casts'
 
 
-describe('OpReturn.lockingScript', () => {
+describe('OP_RETURN.lockingScript', () => {
   let cast;
   beforeEach(() => {
-    cast = Cast.lockingScript(OpReturn, { satoshis: 0, data: ['hello world'] })
+    cast = Cast.lockingScript(OP_RETURN, { satoshis: 0, data: ['hello world'] })
   })
 
   it('script template is correct length', () => {
@@ -19,14 +19,14 @@ describe('OpReturn.lockingScript', () => {
   })
 
   it('getSize() correctly handles safe attribute', () => {
-    const cast1 = Cast.lockingScript(OpReturn, { satoshis: 0, data: ['hello world'] })
-    const cast2 = Cast.lockingScript(OpReturn, { satoshis: 0, data: ['hello world'], safe: false })
+    const cast1 = Cast.lockingScript(OP_RETURN, { satoshis: 0, data: ['hello world'] })
+    const cast2 = Cast.lockingScript(OP_RETURN, { satoshis: 0, data: ['hello world'], safe: false })
 
     assert.equal(cast1.getSize(), 25)
     assert.equal(cast2.getSize(), 24)
   })
 
-  it('getScript() returns opreturn script', () => {
+  it('getScript() returns OP_RETURN script', () => {
     const script = cast.getScript(cast.params)
     assert.lengthOf(script.chunks, 3)
     assert.deepEqual(script.chunks[2].buf, Buffer.from('hello world'))
@@ -55,7 +55,7 @@ describe('OpReturn.lockingScript', () => {
   })
 
   it('getScript() throws error if no data', () => {
-    cast = Cast.lockingScript(OpReturn, { satoshis: 0 })
+    cast = Cast.lockingScript(OP_RETURN, { satoshis: 0 })
     assert.throws(_ => cast.getScript(cast.params), 'OP_RETURN script requires data array')
   })
 })

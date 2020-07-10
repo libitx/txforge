@@ -13,7 +13,7 @@ import {
  * The cast automatically handles your given data array containing strings,
  * hex-strings, buffers and OpCodes, and processes it into a Script.
  */
-const OpReturn = {
+const OP_RETURN = {
   /**
    * OP_RETURN lockingScript
    * 
@@ -32,7 +32,7 @@ const OpReturn = {
    * Example:
    * 
    * ```
-   * Cast.lockingScript(OpReturn, {
+   * Cast.lockingScript(OP_RETURN, {
    *   satoshis: 0,
    *   data: [
    *     '0x48656c6c6f20776f726c64',
@@ -102,4 +102,4 @@ const OpReturn = {
   }
 }
 
-export default OpReturn
+export default OP_RETURN

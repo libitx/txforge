@@ -7,7 +7,7 @@ import {
   Tx
 } from 'bsv'
 import Cast from './cast'
-import { P2PKH, OpReturn } from './casts'
+import { P2PKH, OP_RETURN } from './casts'
 
 // Constants
 const DUST_LIMIT = 546
@@ -169,7 +169,7 @@ class Forge {
         const script = Script.fromHex(output.script)
         cast = { satoshis, script: _ => script }
       } else if (output.data) {
-        cast = Cast.lockingScript(OpReturn, { satoshis, data: output.data })
+        cast = Cast.lockingScript(OP_RETURN, { satoshis, data: output.data })
       } else if (output.to) {
         const address = Address.fromString(output.to)
         cast = Cast.lockingScript(P2PKH, { satoshis, address })
