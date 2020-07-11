@@ -44,7 +44,7 @@ import { P2RPH } from 'txforge/casts'
 
 // 😿 Oh no Node doesn't like ES modules...
 const { Forge, Cast } = require('txforge')
-const { P2RPH = require('txforge/dist/txforge.casts.js') // <-- 👀
+const { P2RPH } = require('txforge/dist/txforge.casts.js') // <-- 👀
 ```
 
 ## Simple example
@@ -80,7 +80,7 @@ const forge = new Forge({
 // As we only have a single UTXO to sign, the transaction can be built and
 // signed with a bsv KeyPair
 forge
-  .buld()
+  .build()
   .sign({ keyPair })
 
 // And voila, we have a tx
