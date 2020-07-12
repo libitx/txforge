@@ -1,8 +1,10 @@
 {
   "name": "txforge",
   "version": "0.1.1",
-  "license": "Apache-2.0",
   "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
+  "keywords": ["bitcoin", "bsv", "transaction", "builder"],
+  "author": "libitx",
+  "license": "Apache-2.0",
   "repository": "https://github.com/libitx/txforge",
   "main": "dist/txforge.js",
   "module": "src/index.js",

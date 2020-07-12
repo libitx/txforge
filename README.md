@@ -8,16 +8,16 @@
 
 TxForge is a modern Bitcoin transaction builder, built on top of [bsv2](https://github.com/moneybutton/bsv/) and capable of supporting *any* non-standard and custom script type.
 
-* Simple declarative API for composing transactions
-* Future-proofed. Built on top of `bsv2` and with ES modules.
+* Offers a simple and familiar declarative API for composing transactions.
 * Can be used for building **any** type of transaction with the power of [Casts](#introducing-casts).
-* Robust and solidly tested library
+* Build for future Bitcoin and future JavaScript. Built on top of `bsv2` and with ES modules.
+* A robust library with solidly tested codebase.
 
 ## Getting started
 
 Install TxForge with `npm` or `yarn`:
 
-```console
+```shell
 npm install txforge
 # or
 yarn add txforge
@@ -31,21 +31,7 @@ Alternatively use in a browser via CSN:
 <script src="https://unpkg.com/txforge/dist/txforge.casts.min.js"></script>
 ```
 
-TxForge has a peer dependency on **version 2** the `bsv` library which must also be available in your project.
-
-**Note for Node users**
-
-TxForge is developed using ES modules. Therefore, depending on whether your platform is happy with ES modules, pay attention to the following:
-
-```javascript
-// 🥳 Cutting edge node, ES modules all the way...
-import { Forge, Cast } from 'txforge'
-import { P2RPH } from 'txforge/casts'
-
-// 😿 Oh no Node doesn't like ES modules...
-const { Forge, Cast } = require('txforge')
-const { P2RPH } = require('txforge/dist/txforge.casts.js') // <-- 👀
-```
+TxForge has a peer dependency on **version 2** the `bsv` library which must also be installed in your project.
 
 ## Simple example
 
@@ -120,7 +106,7 @@ const forge1 = new Forge({
 
 // Assuming the UTXO is a P2PKH input, we can sign it as we did before
 forge1
-  .buld()
+  .build()
   .sign({ keyPair })
 
 // After we've broadcast the above transaction, we can unlock and spend
@@ -141,6 +127,20 @@ forge2
 ```
 
 And there we have it. In the code above, which I hope you'll agree is succinct and elegant, we have created an R-Puzzle in one transaction, and then spent it in another. Easy.
+
+> :warning: **Node users**: TxForge is built using ES modules
+
+Depending on whether your platform is happy with ES modules, you may need to `require()` the build version of casts. See below:
+
+```javascript
+// 🥳 Cutting edge node, ES modules all the way...
+import { Forge, Cast } from 'txforge'
+import { P2RPH } from 'txforge/casts'
+
+// 😿 Oh no Node doesn't like ES modules...
+const { Forge, Cast } = require('txforge')
+const { P2RPH } = require('txforge/dist/txforge.casts.js') // <-- 👀
+```
 
 ### So, you want Multisig, huh?
 
@@ -165,7 +165,7 @@ const forge1 = new Forge({
 
 // Assuming the UTXO is a P2PKH input, we can sign it with a KeyPair
 forge1
-  .buld()
+  .build()
   .sign({ keyPair })
 
 // OK, once broadcast we can spend both inputs in the same transaction
