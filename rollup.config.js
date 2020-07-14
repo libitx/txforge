@@ -19,7 +19,7 @@ export default [
     },
     external: ['bsv'],
     plugins: [
-      resolve({ browser: true }),
+      resolve(),
       commonjs(),
       nodePolyfills(),
       babel({
@@ -49,7 +49,7 @@ export default [
     },
     external: ['bsv'],
     plugins: [
-      resolve({ browser: true }),
+      resolve(),
       commonjs(),
       nodePolyfills(),
       babel({
@@ -80,7 +80,7 @@ export default [
     },
     external: ['bsv'],
     plugins: [
-      resolve({ browser: true }),
+      resolve(),
       commonjs(),
       nodePolyfills(),
       babel({
@@ -103,7 +103,7 @@ export default [
     },
     external: ['bsv'],
     plugins: [
-      resolve({ browser: true }),
+      resolve(),
       commonjs(),
       nodePolyfills(),
       babel({

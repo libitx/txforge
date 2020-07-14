@@ -1,11 +1,11 @@
-import { Buffer } from 'buffer'
 import {
   Address,
   Bn,
   Script,
   TxOut,
   VarInt,
-  Tx
+  Tx,
+  OpCode
 } from 'bsv'
 import Cast from './cast'
 import { P2PKH, OP_RETURN } from './casts'
@@ -208,7 +208,10 @@ class Forge {
     // Iterate over outputs and add to tx
     this.outputs.forEach(cast => {
       const script = cast.getScript()
-      if (cast.satoshis < DUST_LIMIT && !(script.isSafeDataOut() || script.isOpReturn())) {
+      const isOpReturn = (script.chunks[0].opCodeNum === OpCode.OP_RETURN ||
+        (script.chunks[0].opCodeNum === OpCode.OP_FALSE && script.chunks[1].opCodeNum === OpCode.OP_RETURN)
+      )
+      if (cast.satoshis < DUST_LIMIT && !isOpReturn) {
         throw new Error('Cannot create output lesser than dust')
       }
       this.tx.addTxOut(Bn(cast.satoshis), script)
