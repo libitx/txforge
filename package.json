@@ -26,7 +26,6 @@
     "@rollup/plugin-node-resolve": "^8.0",
     "bsv": "^2.0.0-beta",
     "chai": "^4.2",
-    "deepmerge": "^4.2",
     "esm": "^3.2",
     "mocha": "^8.0",
     "rollup": "^2.16",

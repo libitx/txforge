@@ -65,8 +65,7 @@ export default [
     external: ['bsv', 'buffer'],
     plugins: [
       resolve(),
-      commonjs(),
-      banner('TxForge - v<%= pkg.version %>\n<%= pkg.description %>\n<%= pkg.repository %>\nCopyright © <%= new Date().getFullYear() %> Chronos Labs Ltd. Apache-2.0 License')
+      commonjs()
     ],
 
     // suppress eval warnings
