@@ -235,7 +235,7 @@ function getRBuf(kBuf) {
         G = Point.getG(),
         N = Point.getN(),
         Q = G.mul(k),
-        r = Q.x.umod(N).toBuffer();
+        r = Buffer.from( Q.x.umod(N).toArray() );
 
   return r[0]>127 ? Buffer.concat([Buffer.alloc(1), r]) : r;
 }
