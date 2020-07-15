@@ -128,7 +128,7 @@ class Forge {
       return input.forEach(i => this.addInput(i))
     }
 
-    if (input instanceof Cast) {
+    if (Object.getPrototypeOf(input.constructor).name === 'Cast') {
       this.inputs.push(input)
     } else {
       const cast = Cast.unlockingScript(P2PKH, input)
@@ -161,7 +161,7 @@ class Forge {
       return output.forEach(o => this.addOutput(o))
     }
 
-    if (output instanceof Cast) {
+    if (Object.getPrototypeOf(output.constructor).name === 'Cast') {
       this.outputs.push(output)
     } else {
       const satoshis = output.satoshis || output.amount || 0
