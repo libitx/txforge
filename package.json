@@ -1,6 +1,6 @@
 {
   "name": "txforge",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
   "keywords": [
     "bitcoin",
@@ -11,11 +11,11 @@
   "author": "libitx",
   "license": "Apache-2.0",
   "repository": "https://github.com/libitx/txforge",
-  "main": "dist/txforge.js",
+  "main": "dist/txforge.cjs.js",
   "module": "src/index.js",
   "unpkg": "dist/txforge.min.js",
   "scripts": {
-    "build": "rollup -c rollup.config.js",
+    "build": "rm -rf dist/* && rollup -c rollup.config.js",
     "test": "mocha \"test/**/*.test.js\" --require esm"
   },
   "devDependencies": {

@@ -1,6 +1,2 @@
-// Entry for rollup
-// If needed, attach Buffer to window scope
-import { Buffer } from 'buffer'
-if (typeof window !== 'undefined' && !window.Buffer) window.Buffer = Buffer
-
-export * from './src/casts'
+// By default export the CJS casts
+module.exports = require('./dist/txforge.casts.cjs.js')

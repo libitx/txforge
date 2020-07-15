@@ -27,7 +27,7 @@ Alternatively use in a browser via CSN:
 
 ```html
 <script src="https://unpkg.com/txforge/dist/txforge.min.js"></script>
-<!-- optional -->
+<!-- optional: adds casts to TxForge.casts -->
 <script src="https://unpkg.com/txforge/dist/txforge.casts.min.js"></script>
 ```
 
@@ -127,20 +127,6 @@ forge2
 ```
 
 And there we have it. In the code above, which I hope you'll agree is succinct and elegant, we have created an R-Puzzle in one transaction, and then spent it in another. Easy.
-
-> :warning: **Node users**: TxForge is built using ES modules
-
-Depending on whether your platform is happy with ES modules, you may need to `require()` the build version of casts. See below:
-
-```javascript
-// 🥳 Cutting edge node, ES modules all the way...
-import { Forge, Cast } from 'txforge'
-import { P2RPH } from 'txforge/casts'
-
-// 😿 Oh no Node doesn't like ES modules...
-const { Forge, Cast } = require('txforge')
-const { P2RPH } = require('txforge/dist/txforge.casts.js') // <-- 👀
-```
 
 ### So, you want Multisig, huh?
 
