@@ -1,6 +1,7 @@
 import babel from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
+import json from '@rollup/plugin-json'
 import { terser } from 'rollup-plugin-terser'
 import banner from 'rollup-plugin-banner'
 import nodePolyfills from 'rollup-plugin-node-polyfills'
@@ -43,6 +44,7 @@ export default [
         babelHelpers: 'bundled'
       }),
       nodePolyfills(),
+      json(),
       banner('TxForge - v<%= pkg.version %>\n<%= pkg.description %>\n<%= pkg.repository %>\nCopyright © <%= new Date().getFullYear() %> Chronos Labs Ltd. Apache-2.0 License')
     ],
 
@@ -65,7 +67,8 @@ export default [
     external: ['bsv', 'buffer'],
     plugins: [
       resolve(),
-      commonjs()
+      commonjs(),
+      json()
     ],
 
     // suppress eval warnings
