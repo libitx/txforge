@@ -1,6 +1,6 @@
 {
   "name": "txforge",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
   "keywords": [
     "bitcoin",
