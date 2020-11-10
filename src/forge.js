@@ -46,11 +46,13 @@ class Forge {
     outputs,
     changeTo,
     changeScript,
+    nLockTime,
     options
   } = {}) {
     this.tx = new Tx()
     this.inputs = []
     this.outputs = []
+    this.nLockTime = nLockTime
     this.options = {
       ...defaults,
       ...options
@@ -90,6 +92,28 @@ class Forge {
    */
   set changeTo(address) {
     this.changeScript = Address.fromString(address).toTxOutScript()
+  }
+
+  /**
+   * Returns the tx nLockTime.
+   * 
+   * @type {Number}
+   */
+  get nLockTime() {
+    return this.tx.nLockTime
+  }
+
+  /**
+   * Sets the given nLockTime on the tx.
+   * 
+   * If nLockTime < 500000000 it specifies the block number after which the tx
+   * can be included in a block. Otherwise it specifies UNIX timestamp after
+   * which it can be included in a block.
+   * 
+   * @type {Number}
+   */
+  set nLockTime(lockTime) {
+    this.tx.nLockTime = lockTime
   }
 
   /**
@@ -195,7 +219,7 @@ class Forge {
    */
   build() {
     // Create a new tx
-    this.tx = new Tx()
+    this.tx = new Tx({ nLockTime: this.tx.nLockTime })
 
     // Iterate over inputs and add placeholder unlockingScripts
     this.inputs.forEach(cast => {

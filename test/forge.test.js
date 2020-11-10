@@ -76,6 +76,44 @@ describe('Forge#changeTo', () => {
 })
 
 
+describe('Forge#nLockTime', () => {
+  it('is undefined by default', () => {
+    const forge = new Forge()
+    assert.isUndefined(forge.nLockTime)
+  })
+
+  it('returns the tx value when exists', () => {
+    const forge = new Forge({ nLockTime: 666666 })
+    assert.equal(forge.nLockTime, 666666)
+    assert.equal(forge.tx.nLockTime, 666666)
+  })
+
+  it('can be changed with getters and setters', () => {
+    const forge = new Forge()
+    assert.isUndefined(forge.nLockTime)
+    forge.nLockTime = 666666
+    assert.equal(forge.nLockTime, 666666)
+    assert.equal(forge.tx.nLockTime, 666666)
+  })
+
+  it('does not require a rebuild of the forge', () => {
+    const forge = new Forge({
+      inputs: [{
+        txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
+        vout: 0,
+        satoshis: 2000,
+        script: '76a91410bdcba3041b5e5517a58f2e405293c14a7c70c188ac'
+      }],
+      outputs: [{ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 2000 }]
+    })
+    forge.build()
+    assert.match(forge.tx.toHex(), /0{8}$/)
+    forge.nLockTime = 666666
+    assert.notMatch(forge.tx.toHex(), /0{8}$/)
+  })
+})
+
+
 describe('Forge#inputSum', () => {
   let forge;
   beforeEach(() => {
