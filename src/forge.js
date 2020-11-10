@@ -355,16 +355,15 @@ class Forge {
       parts.push({ standard: changeSize })
     }
 
-    const fee = parts.reduce((fee, p) => {
+    return parts.reduce((fee, p) => {
       return Object
         .keys(p)
         .reduce((acc, k) => {
           const bytes = p[k],
                 rate = rates[k];
-          return acc + (bytes * rate)
+          return acc + Math.ceil(bytes * rate)
         }, fee)
     }, 0)
-    return Math.ceil(fee)
   }
 }
 

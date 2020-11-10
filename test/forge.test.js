@@ -298,14 +298,14 @@ describe('Forge#estimateFee()', () => {
   })
 
   it('assumes 1 P2PKH input, event when empty', () => {
-    assert.equal(forge.estimateFee(), 79)
+    assert.equal(forge.estimateFee(), 80)
   })
 
   it('uses specified rates if provided', () => {
     forge.addOutput({ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 50000 })
     forge.addOutput({ data: ['foo', 'bar', 'baz'] })
-    assert.equal(forge.estimateFee(), 108)
-    assert.equal(forge.estimateFee({ standard: 0.50, data: 0.25 }), 102)
-    assert.equal(forge.estimateFee({ standard: 0.25, data: 0.25 }), 54)
+    assert.equal(forge.estimateFee(), 109)
+    assert.equal(forge.estimateFee({ standard: 0.50, data: 0.25 }), 103)
+    assert.equal(forge.estimateFee({ standard: 0.25, data: 0.25 }), 56)
   })
 })
