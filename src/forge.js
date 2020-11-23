@@ -219,8 +219,7 @@ class Forge {
    */
   build() {
     // Create a new tx
-    this.tx = new Tx()
-    this.tx.nLockTime = this.tx.nLockTime
+    this.tx = Tx.fromObject({ nLockTime: this.tx.nLockTime })
 
     // Iterate over inputs and add placeholder unlockingScripts
     this.inputs.forEach(cast => {
