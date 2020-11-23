@@ -252,8 +252,10 @@ describe('Forge#build()', () => {
       { to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 50000 },
       { data: ['0x1234567890'] }
     ])
+    assert.equal(forge.tx.versionBytesNum, 1)
     assert.equal(forge.tx.toHex(), '01000000000000000000')
     forge.build()
+    assert.equal(forge.tx.versionBytesNum, 1)
     assert.match(forge.tx.toHex(), /76a914[a-f0-9]{40}88ac/)
     assert.match(forge.tx.toHex(), /006a051234567890/)
   })
