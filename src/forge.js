@@ -12,7 +12,7 @@ import Cast from './cast'
 import { P2PKH, OP_RETURN } from './casts'
 
 // Constants
-const DUST_LIMIT = 546
+const DUST_LIMIT = 135
 
 // Default Forge options
 const defaults = {
