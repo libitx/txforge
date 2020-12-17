@@ -11,8 +11,7 @@ import {
 import Cast from './cast'
 import { P2PKH, OP_RETURN } from './casts'
 
-// Constants
-const DUST_LIMIT = 546
+const DEFAULT_DUST_LIMIT = 546 // 546 sats remains spendable however since bitcoin-sv v1.0.5 miners will mine consolidatable-dust >= 135 sats
 
 // Default Forge options
 const defaults = {
@@ -20,7 +19,8 @@ const defaults = {
   rates: {
     data: 0.5,
     standard: 0.5
-  }
+  },
+  dustLimit: DEFAULT_DUST_LIMIT // Overridable via constructor e.g: new Forge(options: {dustLimit: 135 })
 }
 
 /**
@@ -236,7 +236,7 @@ class Forge {
       const isOpReturn = (script.chunks[0].opCodeNum === OpCode.OP_RETURN ||
         (script.chunks[0].opCodeNum === OpCode.OP_FALSE && script.chunks[1].opCodeNum === OpCode.OP_RETURN)
       )
-      if (cast.satoshis < DUST_LIMIT && !isOpReturn) {
+      if (cast.satoshis < this.options.dustLimit && !isOpReturn) {
         throw new Error('Cannot create output lesser than dust')
       }
       this.tx.addTxOut(Bn(cast.satoshis), script)
@@ -253,7 +253,7 @@ class Forge {
         change -= 16
       }
 
-      if (change > DUST_LIMIT) {
+      if (change > this.options.dustLimit) {
         this.tx.addTxOut(TxOut.fromProperties(Bn(change), this.changeScript))
       }
     }
