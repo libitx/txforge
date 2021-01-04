@@ -25,7 +25,7 @@
     "@rollup/plugin-commonjs": "^13.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.0",
-    "bsv": "^2.0.0-beta",
+    "bsv": "^2.0",
     "chai": "^4.2",
     "esm": "^3.2",
     "mocha": "^8.0",
@@ -35,6 +35,6 @@
     "rollup-plugin-terser": "^6.1"
   },
   "peerDependencies": {
-    "bsv": "^2.0.0-beta"
+    "bsv": "^2.0"
   }
 }

@@ -11,16 +11,19 @@ import {
 import Cast from './cast'
 import { P2PKH, OP_RETURN } from './casts'
 
-const DEFAULT_DUST_LIMIT = 546 // 546 sats remains spendable however since bitcoin-sv v1.0.5 miners will mine consolidatable-dust >= 135 sats
-
 // Default Forge options
 const defaults = {
   debug: false,
   rates: {
-    data: 0.5,
-    standard: 0.5
-  },
-  dustLimit: DEFAULT_DUST_LIMIT // Overridable via constructor e.g: new Forge(options: {dustLimit: 135 })
+    mine: {
+      data: 0.5,
+      standard: 0.5
+    },
+    relay: {
+      data: 0.25,
+      standard: 0.25
+    }
+  }
 }
 
 /**
@@ -236,8 +239,13 @@ class Forge {
       const isOpReturn = (script.chunks[0].opCodeNum === OpCode.OP_RETURN ||
         (script.chunks[0].opCodeNum === OpCode.OP_FALSE && script.chunks[1].opCodeNum === OpCode.OP_RETURN)
       )
-      if (cast.satoshis < this.options.dustLimit && !isOpReturn) {
-        throw new Error('Cannot create output lesser than dust')
+      
+      // Unless op_return, ensure dust threshold
+      if (!isOpReturn) {
+        const dust = dustThreshold(cast.getSize(), this.options.rates)
+        if (cast.satoshis < dust) {
+          throw new Error(`Cannot create output lesser than dust (${ dust })`)
+        }
       }
       this.tx.addTxOut(Bn(cast.satoshis), script)
     })
@@ -253,7 +261,11 @@ class Forge {
         change -= 16
       }
 
-      if (change > this.options.dustLimit) {
+      // Calculate change script size for working out dust threshold
+      const changeSize = this.changeScript.length +
+        VarInt.fromNumber(this.changeScript.length).buf.length;
+
+      if (change > dustThreshold(changeSize, this.options.rates)) {
         this.tx.addTxOut(TxOut.fromProperties(Bn(change), this.changeScript))
       }
     }
@@ -360,13 +372,19 @@ class Forge {
         .keys(p)
         .reduce((acc, k) => {
           const bytes = p[k],
-                rate = rates[k];
+                rate = rates[k] || rates.mine[k];
           return acc + Math.ceil(bytes * rate)
         }, fee)
     }, 0)
   }
 }
 
+// Calculates the dust threshold
+// See: https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/primitives/transaction.h#L188-L208
+function dustThreshold(lockScriptSize, rates) {
+  const rate = rates.standard || rates.relay.standard
+  return Math.floor(3 * (lockScriptSize + 148) * rate)
+}
 
 // Log the given arguments if debug mode enabled
 function debug(...args) {

@@ -309,5 +309,7 @@ describe('Forge#estimateFee()', () => {
     assert.equal(forge.estimateFee(), 109)
     assert.equal(forge.estimateFee({ standard: 0.50, data: 0.25 }), 103)
     assert.equal(forge.estimateFee({ standard: 0.25, data: 0.25 }), 56)
+    assert.equal(forge.estimateFee({ mine: { standard: 0.50, data: 0.25 }}), 103)
+    assert.equal(forge.estimateFee({ mine: { standard: 0.25, data: 0.25 }}), 56)
   })
 })
