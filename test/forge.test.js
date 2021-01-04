@@ -259,6 +259,25 @@ describe('Forge#build()', () => {
     assert.match(forge.tx.toHex(), /76a914[a-f0-9]{40}88ac/)
     assert.match(forge.tx.toHex(), /006a051234567890/)
   })
+
+  it('ensures dust limit based on relay rate', () => {
+    forge.addOutput([
+      { to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 100 },
+    ])
+    assert.throws(_ => forge.build(), 'Cannot create output lesser than dust (135)')
+    forge.outputs[0].satoshis = 135
+    assert.doesNotThrow(_ => forge.build())
+  })
+
+  it('ensures dust limit based on relay rate', () => {
+    forge.options.rates.relay.standard = 0.2
+    forge.addOutput([
+      { to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 100 },
+    ])
+    assert.throws(_ => forge.build(), 'Cannot create output lesser than dust (108)')
+    forge.outputs[0].satoshis = 108
+    assert.doesNotThrow(_ => forge.build())
+  })
 })
 
 

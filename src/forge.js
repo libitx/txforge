@@ -383,7 +383,7 @@ class Forge {
 // See: https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/primitives/transaction.h#L188-L208
 function dustThreshold(lockScriptSize, rates) {
   const rate = rates.standard || rates.relay.standard
-  return Math.floor(3 * (lockScriptSize + 148) * rate)
+  return 3 * Math.floor((lockScriptSize + 148) * rate)
 }
 
 // Log the given arguments if debug mode enabled

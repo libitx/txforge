@@ -267,4 +267,4 @@ To learn more about how Casts work, read through the source code in the example 
 
 TxForge is open source and released under the [Apache-2 License](https://github.com/libitx/txforge/blob/master/LICENSE).
 
-Copyright (c) 2020 libitx.
+Copyright (c) 2020-2021 Chronos Labs Ltd.
