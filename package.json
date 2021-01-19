@@ -14,6 +14,7 @@
   "main": "dist/txforge.cjs.js",
   "module": "src/index.js",
   "unpkg": "dist/txforge.min.js",
+  "types": "src/index.d.ts",
   "scripts": {
     "build": "rm -rf dist/* && rollup -c rollup.config.js",
     "test": "mocha \"test/**/*.test.js\" --require esm"
