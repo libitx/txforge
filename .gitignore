@@ -6,4 +6,9 @@ dist
 node_modules
 test/dummy
 
-yarn-*.log
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
