@@ -278,6 +278,23 @@ describe('Forge#build()', () => {
     forge.outputs[0].satoshis = 108
     assert.doesNotThrow(_ => forge.build())
   })
+
+  it('correctly builds the change output', () => {
+    forge.addInput({
+      txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
+      vout: 0,
+      satoshis: 2000,
+      script: '76a91410bdcba3041b5e5517a58f2e405293c14a7c70c188ac'
+    })
+    forge.addOutput([
+      { to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 1000 },
+    ])
+    forge.changeTo = '16GR81swUJX6XG8MFj5kJWHbTqXLRRgvtJ'
+    forge.build()
+    assert.lengthOf(forge.tx.txOuts, 2)
+    assert.equal(forge.tx.txOuts[0].valueBn.toNumber(), 1000)
+    assert.isAtMost(forge.tx.txOuts[1].valueBn.toNumber(), 900)
+  })
 })
 
 

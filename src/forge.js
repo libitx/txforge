@@ -262,8 +262,9 @@ class Forge {
       }
 
       // Calculate change script size for working out dust threshold
-      const changeSize = this.changeScript.length +
-        VarInt.fromNumber(this.changeScript.length).buf.length;
+      const changeScriptLen = this.changeScript.toBuffer().length
+      const changeSize = changeScriptLen +
+        VarInt.fromNumber(changeScriptLen).buf.length;
 
       if (change > dustThreshold(changeSize, this.options.rates)) {
         this.tx.addTxOut(TxOut.fromProperties(Bn(change), this.changeScript))
