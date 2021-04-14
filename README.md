@@ -2,7 +2,7 @@
 
 ![Modern Bitcoin transaction builder](https://github.com/libitx/txforge/raw/master/media/poster.jpg)
 
-![npm](https://img.shields.io/npm/v/txforge?color=informational)
+[![npm](https://img.shields.io/npm/v/txforge?color=informational)](https://www.npmjs.com/package/txforge)
 ![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
 ![Build Status](https://img.shields.io/github/workflow/status/libitx/txforge/Node.js%20CI)
 
