@@ -31,13 +31,18 @@ export default [
           bsv: 'bsvjs'
         },
         plugins: [
-          terser()
+          terser({
+            keep_classnames: true
+          })
         ]
       }
     ],
     external: ['bsv'],
     plugins: [
-      resolve(),
+      resolve({
+        browser: true,
+        preferBuiltins: false
+      }),
       commonjs(),
       babel({
         exclude: 'node_modules/**',
@@ -50,7 +55,7 @@ export default [
 
     // suppress eval warnings
     onwarn(warning, warn) {
-      if (warning.id.match(/cast\.js$/) && warning.code === 'EVAL') return
+      if (warning.id && warning.id.match(/cast\.js$/) && warning.code === 'EVAL') return
       warn(warning)
     }
   },
@@ -73,7 +78,7 @@ export default [
 
     // suppress eval warnings
     onwarn(warning, warn) {
-      if (warning.id.match(/cast\.js$/) && warning.code === 'EVAL') return
+      if (warning.id && warning.id.match(/cast\.js$/) && warning.code === 'EVAL') return
       warn(warning)
     }
   },
@@ -102,13 +107,18 @@ export default [
           bsv: 'bsvjs'
         },
         plugins: [
-          terser()
+          terser({
+            keep_classnames: true
+          })
         ]
       }
     ],
     external: ['bsv'],
     plugins: [
-      resolve(),
+      resolve({
+        browser: true,
+        preferBuiltins: false
+      }),
       commonjs(),
       babel({
         exclude: 'node_modules/**',
