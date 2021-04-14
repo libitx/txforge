@@ -1,6 +1,6 @@
 {
   "name": "txforge",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
   "keywords": [
     "bitcoin",
@@ -14,7 +14,6 @@
   "main": "dist/txforge.cjs.js",
   "module": "src/index.js",
   "unpkg": "dist/txforge.min.js",
-  "types": "src/index.d.ts",
   "scripts": {
     "build": "rm -rf dist/* && rollup -c rollup.config.js",
     "test": "mocha \"test/**/*.test.js\" --require esm"
