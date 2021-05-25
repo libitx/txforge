@@ -195,8 +195,12 @@ class Forge {
       let cast
       if (output.script) {
         // If its already script we can create a fake cast
-        const script = Script.fromHex(output.script)
-        cast = { satoshis, script: _ => script }
+        const scriptBuf = Buffer.from(output.script, 'hex')
+        const lockingScript = {
+          script: [Script.fromBuffer(scriptBuf)],
+          size: scriptBuf.length
+        }
+        cast = Cast.lockingScript({ lockingScript }, { satoshis })
       } else if (output.data) {
         cast = Cast.lockingScript(OP_RETURN, { satoshis, data: output.data })
       } else if (output.to) {

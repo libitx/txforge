@@ -206,6 +206,8 @@ describe('Forge#addOutput()', () => {
       satoshis: 15399
     })
     assert.lengthOf(forge.outputs, 1)
+    forge.build()
+    assert.lengthOf(forge.tx.txOuts, 1)
   })
 
   it('adds output data params to the tx', () => {
@@ -213,6 +215,8 @@ describe('Forge#addOutput()', () => {
       data: ['0xeeefef', 'foo', 'bar']
     })
     assert.lengthOf(forge.outputs, 1)
+    forge.build()
+    assert.lengthOf(forge.tx.txOuts, 1)
   })
 
   it('adds output P2PKH params to the tx', () => {
@@ -221,6 +225,8 @@ describe('Forge#addOutput()', () => {
       satoshis: 50000
     })
     assert.lengthOf(forge.outputs, 1)
+    forge.build()
+    assert.lengthOf(forge.tx.txOuts, 1)
   })
 
   it('throws error with invalid params', () => {
