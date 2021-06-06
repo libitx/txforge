@@ -336,9 +336,10 @@ class Forge {
    * format. If not given. will use the default rates set on the Forge instance.
    * 
    * @param {Object} rates Miner Merchant API rates
+   * @param {Boolean} addInput Estimate including an additional input
    * @returns {Number}
    */
-  estimateFee(rates = this.options.rates) {
+  estimateFee(rates = this.options.rates, addInput = true) {
     const parts = [
       { standard: 4 }, // version
       { standard: 4 }, // locktime
@@ -346,13 +347,13 @@ class Forge {
       { standard: VarInt.fromNumber(this.outputs.length).buf.length },
     ]
 
-    if (this.inputs.length > 0) {
+    if (addInput || this.inputs.length == 0) {
+      // Assume single p2pkh script
+      parts.push({ standard: 148 })
+    } else {
       this.inputs.forEach(cast => {
         parts.push({ standard: cast.getSize() })
       })
-    } else {
-      // Assume single p2pkh script
-      parts.push({ standard: 148 })
     }
 
     if (this.outputs.length > 0) {
