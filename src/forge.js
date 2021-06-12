@@ -339,7 +339,7 @@ class Forge {
    * @param {Boolean} addInput Estimate including an additional input
    * @returns {Number}
    */
-  estimateFee(rates = this.options.rates, addInput = true) {
+  estimateFee(rates = this.options.rates, addInput = false) {
     const parts = [
       { standard: 4 }, // version
       { standard: 4 }, // locktime

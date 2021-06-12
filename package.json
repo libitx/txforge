@@ -1,6 +1,6 @@
 {
   "name": "txforge",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
   "keywords": [
     "bitcoin",
@@ -19,19 +19,19 @@
     "test": "mocha \"test/**/*.test.js\" --require esm"
   },
   "devDependencies": {
-    "@babel/core": "^7.12",
-    "@babel/preset-env": "^7.12",
-    "@rollup/plugin-babel": "^5.2",
-    "@rollup/plugin-commonjs": "^17.0",
+    "@babel/core": "^7.14",
+    "@babel/preset-env": "^7.14",
+    "@rollup/plugin-babel": "^5.3",
+    "@rollup/plugin-commonjs": "^19.0",
     "@rollup/plugin-json": "^4.1",
-    "@rollup/plugin-node-resolve": "^11.0",
+    "@rollup/plugin-node-resolve": "^13.0",
     "bsv": "^2.0",
-    "chai": "^4.2",
+    "chai": "^4.3",
     "esm": "^3.2",
     "mocha": "^8.2",
-    "rollup": "^2.35",
+    "rollup": "^2.51",
     "rollup-plugin-banner": "^0.2",
-    "rollup-plugin-node-polyfills": "^0.2",
+    "rollup-plugin-polyfill-node": "^0.6.2",
     "rollup-plugin-terser": "^7.0"
   },
   "peerDependencies": {
