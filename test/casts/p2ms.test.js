@@ -73,6 +73,13 @@ describe('P2MS.unlockingScript', () => {
     assert.isTrue(bsv.Sig.IsTxDer(script.chunks[3].buf))
   })
 
+  it('getScript() returns P2MS unlocking script when M < N correct keypairs provided', () => {
+    const script = cast.getScript(forge, { keyPairs: [keyPairs[0], keyPairs[2]] })
+    assert.lengthOf(script.chunks, 3)
+    assert.isTrue(bsv.Sig.IsTxDer(script.chunks[1].buf))
+    assert.isTrue(bsv.Sig.IsTxDer(script.chunks[2].buf))
+  })
+
   it('getScript() throws error when incorrect keyPair', () => {
     const keyPairs = [bsv.KeyPair.fromRandom()]
     assert.throws(_ => cast.getScript(forge, { keyPairs }), 'P2MS unlockingScript keyPairs must match lockingScript pubKeys')
