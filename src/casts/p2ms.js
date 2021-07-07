@@ -106,8 +106,10 @@ const P2MS = {
           let keyPair = keyPairs.find(k => {
             return Buffer.compare(txOut.script.chunks[i].buf, k.pubKey.toBuffer()) === 0
           })
-          const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
-          script.writeBuffer(sig.toTxFormat())
+          if (keyPair) {
+            const sig = tx.sign(keyPair, sighashType, txOutNum, txOut.script, txOut.valueBn, flags)
+            script.writeBuffer(sig.toTxFormat())
+          }
         }
         return script
       }
