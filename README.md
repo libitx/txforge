@@ -13,6 +13,19 @@ TxForge is a modern Bitcoin transaction builder, built on top of [bsv2](https://
 * Build for future Bitcoin and future JavaScript. Built on top of `bsv2` and with ES modules.
 * A robust library with solidly tested codebase.
 
+## Sponsors
+
+<p align="center">Supported by:</p>
+<p align="center">
+  <a href="https://coingeek.com" target="_blank" rel="noopener noreferrer">
+    <img src="https://www.chronoslabs.net/img/badges/coingeek.png" alt="Coingeek">
+  </a>
+</p>
+
+Your sponsorship will help us continue to release and maintain software that Bitcoin businesses and developers depend on.
+
+#### 👉 [Sponsor Chronos Labs' open source work](https://www.chronoslabs.net/sponsor/)
+
 ## Getting started
 
 Install TxForge with `npm` or `yarn`:
