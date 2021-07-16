@@ -18,7 +18,7 @@ TxForge is a modern Bitcoin transaction builder, built on top of [bsv2](https://
 <p align="center">Supported by:</p>
 <p align="center">
   <a href="https://coingeek.com" target="_blank" rel="noopener noreferrer">
-    <img src="https://www.chronoslabs.net/img/badges/coingeek.png" alt="Coingeek">
+    <img src="https://www.chronoslabs.net/img/badges/coingeek.png" width="180" alt="Coingeek">
   </a>
 </p>
 
