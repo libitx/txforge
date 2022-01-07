@@ -257,18 +257,19 @@ class Forge {
     // If necessary, add the changeScript
     if (this.changeScript) {
       let change = this.inputSum - this.outputSum - this.estimateFee()
+
+      // Calculate change script size for working out dust threshold
+      const changeScriptLen = this.changeScript.toBuffer().length
+      const changeSize = changeScriptLen + VarInt.fromNumber(changeScriptLen).buf.length;
       
       // If no outputs we dont need to make adjustment for change
       // as it is already factored in to fee estimation
       if (this.outputs.length > 0) {
-        // Size of change script * 0.5
-        change -= 16
+        // Adjust change by size of change script * miner fee
+        const rate = this.options.rates.standard || this.options.rates.mine.standard
+        const extraFee = Math.ceil(changeSize * rate)
+        change -= extraFee
       }
-
-      // Calculate change script size for working out dust threshold
-      const changeScriptLen = this.changeScript.toBuffer().length
-      const changeSize = changeScriptLen +
-        VarInt.fromNumber(changeScriptLen).buf.length;
 
       if (change > dustThreshold(changeSize, this.options.rates)) {
         this.tx.addTxOut(TxOut.fromProperties(Bn(change), this.changeScript))
