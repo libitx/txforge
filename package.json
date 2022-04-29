@@ -1,0 +1,40 @@
+{
+  "name": "txforge",
+  "version": "0.2.6",
+  "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
+  "keywords": [
+    "bitcoin",
+    "bsv",
+    "transaction",
+    "builder",
+    "nimble"
+  ],
+  "author": "libitx",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/libitx/txforge",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/txforge.cjs",
+      "import": "./src/index.js"
+    },
+    "./*": {
+      "require": "./dist/*.cjs",
+      "import": "./src/*.js"
+    }
+  },
+  "packageManager": "yarn@3.2.0",
+  "scripts": {
+    "build": "yarn clean && node build.js",
+    "clean": "rm -rf dist",
+    "test": "ava"
+  },
+  "dependencies": {
+    "@runonbitcoin/nimble": "^1.0.10"
+  },
+  "devDependencies": {
+    "ava": "^4.2.0",
+    "esbuild": "^0.14.38",
+    "esbuild-plugin-globals": "^0.1.1"
+  }
+}
