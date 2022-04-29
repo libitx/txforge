@@ -1,22 +1,11 @@
 import nimble from '@runonbitcoin/nimble'
 
-export const foo = 'bar'
-
-
-const _deps = {
-  nimble
-}
+export { Forge, createForge, forgeTx } from './classes/forge.js'
+export { Cast, isCast } from './classes/cast.js'
+export { ScriptBuilder } from './classes/script-builder.js'
+export { UTXO, createUTXO } from './classes/utxo.js'
+export * as casts from './casts/index.js'
 
 export const deps = {
-  get nimble() {
-    if (!_deps.nimble) {
-      console.warn('nimble not found. ensure nimble is available to your environment.')
-    }
-
-    return _deps.nimble
-  },
-
-  set nimble(lib) {
-    _deps.nimble = lib
-  }
+  nimble
 }

@@ -59,10 +59,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@runonbitcoin/nimble@npm:^1.0.10":
+"@runonbitcoin/nimble@runonbitcoin/nimble":
   version: 1.0.10
-  resolution: "@runonbitcoin/nimble@npm:1.0.10"
-  checksum: eec0c49a60f9d8d768c9e71dfefc54d215007e53b9f27d9d78337f1a3550ce0aecfc5c9ca2c6f58fadd0ffcc0a92299886972571242e716bdf6cf82eb55a700b
+  resolution: "@runonbitcoin/nimble@https://github.com/runonbitcoin/nimble.git#commit=d19ff1cf5e6a22bdde0766fffb78fa33bf437c7a"
+  checksum: 3dacaf8096185bcd19e3d33e74396c8b66945909ee8bb3d081bb0607e3eb240d8ae79e25f5538e723f2267e7637e4fccf95850c4bbc26449e0db51c90f3dd211
   languageName: node
   linkType: hard
 
@@ -2125,10 +2125,11 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "txforge@workspace:."
   dependencies:
-    "@runonbitcoin/nimble": ^1.0.10
+    "@runonbitcoin/nimble": runonbitcoin/nimble
     ava: ^4.2.0
     esbuild: ^0.14.38
     esbuild-plugin-globals: ^0.1.1
+    glob: ^8.0.1
   languageName: unknown
   linkType: soft
 

@@ -1,4 +1,5 @@
 import esbuild from 'esbuild'
+import glob from 'glob'
 import GlobalsPlugin from 'esbuild-plugin-globals'
 
 const makeAllPackagesExternalPlugin = {
@@ -20,8 +21,12 @@ esbuild.build({
   minify: true,
   keepNames: true,
   sourcemap: true,
+  define: {
+    VARIANT: 'browser'
+  },
   plugins: [
     GlobalsPlugin({
+      'crypto': 'null',
       '@runonbitcoin/nimble': 'nimble'
     })
   ]
@@ -37,12 +42,26 @@ esbuild.build({
   target: 'es6',
   minify: true,
   keepNames: true,
-  sourcemap: true
+  sourcemap: true,
+  define: {
+    VARIANT: 'browser'
+  },
+  plugins: [
+    GlobalsPlugin({
+      'crypto': 'null'
+    })
+  ]
 })
 
 esbuild.build({
-  entryPoints: ['src/index.js'],
-  outfile: 'dist/txforge.cjs',
+  entryPoints: [
+    'src/index.js',
+    'src/extra/r-puzzle.js'
+  ],
+  outdir: 'dist/cjs',
+  outExtension: {
+    '.js': '.cjs'
+  },
   bundle: true,
   format: 'cjs',
   platform: 'node',
