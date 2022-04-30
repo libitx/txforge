@@ -2,9 +2,9 @@ import nimble from '@runonbitcoin/nimble'
 import { forgeTx } from './forge.js'
 import { ScriptBuilder, serializeScript } from './script-builder.js'
 import { UTXO } from './utxo.js'
+import { verifyScript } from '../extra/verify-script.js'
 
 const { Transaction } = nimble.classes
-const { verifyScript } = nimble.functions
 
 export class Cast {
   constructor(mode, { params, opts, satoshis, utxo }) {
@@ -14,6 +14,7 @@ export class Cast {
     this.satoshis = satoshis
     this.utxo     = utxo
     this.script   = new ScriptBuilder(this)
+    this.ctx      = null
     this.init(params, opts)
   }
 
@@ -103,7 +104,7 @@ export class Cast {
 
     const { txid, vout, txout } = this.utxo
     const script = this.toScript()
-    const sequence = this.opts.sequence || 0xFFFFFFFF
+    const sequence = 0xFFFFFFFF // todo - fetch from options
 
     return new Transaction.Input(txid, vout, script, sequence, txout)
   }

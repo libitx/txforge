@@ -126,7 +126,7 @@ export function pushTx() {
       this.utxo.satoshis,
       SIGHASH_FLAG
     ) :
-    new Uint8Array(1448);
+    new Uint8Array(181);
 
   this.script.push(preimg)
 }
@@ -141,19 +141,9 @@ export function checkTx() {
     .apply(pushOrder)
     .apply(divOrder)
     .apply(sighashMSBis0or255)
-    .push(OP_IF)
-      .push(OP_2)
-      .push(OP_PICK)
-      .push(OP_ADD)
-    .push(OP_ELSE)
-      .push(OP_1ADD)
-    .push(OP_ENDIF)
+    .push(asm('OP_IF OP_2 OP_PICK OP_ADD OP_ELSE OP_1ADD OP_ENDIF'))
     .apply(sighashModGtOrder)
-    .push(OP_IF)
-      .push(OP_SUB)
-    .push(OP_ELSE)
-      .push(OP_NIP)
-    .push(OP_ENDIF)
+    .push(asm('OP_IF OP_SUB OP_ELSE OP_NIP OP_ENDIF'))
     .apply(pushSig)
     .push(OP_SWAP)
     .push(OP_IF)
@@ -177,7 +167,7 @@ export function checkTxVerify() {
 function prepareSighash() {
   this.script
     .apply(reverse, [32])
-    .push([0x1f])
+    .push([0x1F])
     .push(OP_SPLIT)
     .push(OP_TUCK)
     .push(OP_CAT)
@@ -188,22 +178,23 @@ function prepareSighash() {
 function pushOrder() {
   this.script
     .push(ORDER_PREFIX)
-    .push(asm('00 OP_15 OP_NUM2BIN OP_INVERT OP_CAT 00 OP_CAT'))
+    .push([0])
+    .push(asm('OP_15 OP_NUM2BIN OP_INVERT OP_CAT'))
+    .push([0])
+    .push(OP_CAT)
 }
 
 // TODO
 function divOrder() {
-  this.script
-    .push(OP_DUP)
-    .push(OP_2)
-    .push(OP_DIV)
+  this.script.push(asm('OP_DUP OP_2 OP_DIV'))
 }
 
 // TODO
 function sighashMSBis0or255() {
-  this.script.push(
-    asm('OP_ROT OP_3 OP_ROLL OP_DUP ff OP_EQUAL OP_SWAP 00 OP_EQUAL OP_BOOLOR OP_TUCK')
-  )
+  this.script
+    .push(asm('OP_ROT OP_3 OP_ROLL OP_DUP ff OP_EQUAL OP_SWAP'))
+    .push([0])
+    .push(asm('OP_EQUAL OP_BOOLOR OP_TUCK'))
 }
 
 // TODO

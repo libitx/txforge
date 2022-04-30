@@ -18,7 +18,7 @@ export class Raw extends Cast {
     this.script.push(script)
   }
 
-  unlockingScript({ privkey }) {
+  unlockingScript({ script }) {
     this.script.push(script)
   }
 }

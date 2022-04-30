@@ -8,8 +8,8 @@ const { isBuffer, decodeScriptChunks } = nimble.functions
  * TODO
  */
 export class ScriptBuilder {
-  constructor(contract) {
-    this.ctx = contract ? contract : { script: this }
+  constructor(cast) {
+    this.cast = cast ? cast : { script: this }
     this.chunks = []
   }
 
@@ -21,7 +21,7 @@ export class ScriptBuilder {
       throw new Error(`invalid argument. callback must be a function.`)
     }
 
-    fn.apply(this.ctx, args)
+    fn.apply(this.cast, args)
     return this
   }
 
