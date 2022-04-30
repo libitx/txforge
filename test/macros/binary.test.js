@@ -1,10 +1,36 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
 import { ScriptBuilder, serializeScript } from '../../src/classes/script-builder.js'
-import { reverse, slice, trim } from '../../src/macros/index.js'
+import { decodeUint, reverse, slice, trim } from '../../src/macros/index.js'
 import { verifyScript } from '../../src/extra/verify-script.js'
 
 const { generateRandomData } = nimble.functions
+
+test('decodeUint() casts the top stack element to a script number', t => {
+  function uintBuf(len, cb) {
+    const buf = new ArrayBuffer(len)
+    const view = new DataView(buf)
+    cb(view)
+    return new Uint8Array(view.buffer)
+  }
+
+  const bufs = [
+    uintBuf(1, v => v.setUint8(0, 24, true)),
+    uintBuf(4, v => v.setUint32(0, 24, true)),
+    uintBuf(4, v => v.setUint32(0, 4000000000, true)),
+  ]
+
+  const b = new ScriptBuilder()
+  b.each(bufs, buf => {
+    b.push(buf).apply(decodeUint)
+  })
+
+  const script = serializeScript(b)
+  const { stack } = verifyScript([], script)
+
+  const expected = [[24], [24], [0, 40, 107, 238, 0]]
+  t.deepEqual(stack, expected)
+})
 
 test('reverse() reverses the data on top of the stack', t => {
   const bufs = [

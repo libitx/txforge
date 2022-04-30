@@ -1,7 +1,22 @@
 import nimble from '@runonbitcoin/nimble'
 import { num } from '../helpers/index.js'
 
-const { OP_1, OP_CAT, OP_DROP, OP_NIP, OP_SIZE, OP_SPLIT, OP_SUB, OP_SWAP } = nimble.constants.opcodes
+const { OP_1, OP_BIN2NUM, OP_CAT, OP_DROP, OP_NIP, OP_SIZE, OP_SPLIT, OP_SUB, OP_SWAP } = nimble.constants.opcodes
+
+/**
+ * TODO
+ */
+export function decodeUint(endian = 'le') {
+  if (['be', 'big'].includes(endian)) {
+    throw new Error('big endian decoding not implemented yet')
+
+  } else {
+    this.script
+      .push([0])
+      .push(OP_CAT)
+      .push(OP_BIN2NUM)
+  }
+}
 
 /**
  * TODO

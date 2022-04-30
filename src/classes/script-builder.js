@@ -61,7 +61,7 @@ export class ScriptBuilder {
       throw new Error(`invalid each. first argument must be an array.`)
     }
 
-    for (let i = 0; i < n; i++) this.apply(callback, [elements[i], i])
+    for (let i = 0; i < elements.length; i++) this.apply(callback, [elements[i], i])
     return this
   }
 
