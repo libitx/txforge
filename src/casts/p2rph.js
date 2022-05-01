@@ -6,6 +6,40 @@ import { signTx, signTxWithK } from '../macros/index.js'
 const { PrivateKey } = nimble.classes
 const { isBuffer, generatePrivateKey, sha256ripemd160 } = nimble.functions
 
+/**
+ * Pay to R-Puzzle Hash
+ * 
+ * P2RPH scripts are used to lock Bitcoin to a hash puzzle based on the R value
+ * of an ECDSA signature. The Bitcoin can later be unlocked with knowledge of
+ * the corresponding K value used in that signature.
+ * 
+ * The technique allows for the spending party to sign the unlocking script
+ * using any private key.
+ * 
+ * ## Lock params
+ * 
+ * - `r` - R value
+ * 
+ * ## Unlock params
+ * 
+ * - `k` - K value
+ * - `privkey` - Optional private key to sign with
+ * 
+ * ## Examples
+ * 
+ * TxForge offers an additional module with helpers to generate K and R values.
+ * 
+ * ```
+ * import { generateK, calculateR } from 'txforge/extra/r-puzzle
+ * 
+ * const k = generateK()
+ * const r = calculateR(k)
+ * 
+ * P2RPH.lock(1000, { r })
+ * 
+ * P2RPH.unlock(utxo, { k })
+ * ```
+ */
 export class P2RPH extends Cast {
   init(params) {
     if (this.mode === 'unlock' && typeof params.privkey === 'undefined') {

@@ -5,6 +5,30 @@ import { signTx } from '../macros/index.js'
 
 const { OP_0, OP_CHECKMULTISIG } = nimble.constants.opcodes
 
+/**
+ * Pay to Multi Sig
+ * 
+ * P2MS scripts are used to lock Bitcoin to multiple public keys. The Bitcoin
+ * can later be unlocked by signing with the specified threshold of
+ * corresponding private keys.
+ * 
+ * ## Lock params
+ * 
+ * - `pubkeys` - Array of public keys
+ * - `threshold` - Integer of required signatures
+ * 
+ * ## Unlock params
+ * 
+ * - `privkeys` - Array of private keys
+ * 
+ * ## Example
+ * 
+ * ```
+ * P2MS.lock(1000, { pubkeys: [pub1, pub2, pub3], threshold: 2 })
+ * 
+ * P2MS.unlock(utxo, { privkey: [priv1, priv2] })
+ * ```
+ */
 export class P2MS extends Cast {
   init() {
     if (this.mode === 'lock') validateLock(this.params)

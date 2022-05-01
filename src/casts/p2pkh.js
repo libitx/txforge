@@ -5,6 +5,28 @@ import { signTx } from '../macros/index.js'
 const { Address } = nimble.classes
 const { OP_DUP, OP_HASH160, OP_EQUALVERIFY, OP_CHECKSIG } = nimble.constants.opcodes
 
+/**
+ * Pay to Public Key Hash
+ * 
+ * P2PKH scripts are used to lock Bitcoin to an address. The Bitcoin can later
+ * be unlocked using the private key corresponding to the address.
+ * 
+ * ## Lock params
+ * 
+ * - `address` - address instance or string
+ * 
+ * ## Unlock params
+ * 
+ * - `privkey` - Private key
+ * 
+ * ## Examples
+ * 
+ * ```
+ * P2PKH.lock(1000, { address })
+ * 
+ * P2PKH.unlock(utxo, { privkey })
+ * ```
+ */
 export class P2PKH extends Cast {
   init(params) {
     if (typeof params.address === 'string') {

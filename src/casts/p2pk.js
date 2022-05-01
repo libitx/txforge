@@ -4,6 +4,28 @@ import { signTx } from '../macros/index.js'
 
 const { OP_CHECKSIG } = nimble.constants.opcodes
 
+/**
+ * Pay to Public Key
+ * 
+ * P2PK scripts are used to lock Bitcoin to a public key. The Bitcoin can later
+ * be unlocked using the corresponding private key.
+ * 
+ * ## Lock params
+ * 
+ * - `pubkey` - Public key
+ * 
+ * ## Unlock params
+ * 
+ * - `privkey` - Private key
+ * 
+ * ## Examples
+ * 
+ * ```
+ * P2PK.lock(1000, { pubkey })
+ * 
+ * P2PK.unlock(utxo, { privkey })
+ * ```
+ */
 export class P2PK extends Cast {
   init() {
     if (this.mode === 'lock') validateLock(this.params)
