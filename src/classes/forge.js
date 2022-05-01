@@ -102,8 +102,8 @@ export class Forge {
         8,
         varintSize(inScripts.length),
         varintSize(outScripts.length),
-        inScripts.reduce((sum, script) => sum + txInSize(script), 0),
-        outScripts.reduce((sum, script) => sum + txOutSize(script), 0)
+        inScripts.reduce((sum, script) => sum + inputSize(script), 0),
+        outScripts.reduce((sum, script) => sum + outputSize(script), 0)
       ].reduce((sum, i) => sum + i, 0),
       data: 0
     }
@@ -112,7 +112,7 @@ export class Forge {
     outScripts
       .filter(s => /^006a/.test(s.toHex()))
       .forEach(s => {
-        const len = txOutSize(s)
+        const len = outputSize(s)
         bytes.standard -= len
         bytes.data += len
       })
@@ -152,15 +152,15 @@ export class Forge {
     const tx = new Transaction()
     
     // First pass populate inputs with zero'd sigs
-    this.inputs.forEach(cast => tx.input(cast.toTxIn()))
-    this.outputs.forEach(cast => tx.output(cast.toTxOut()))
+    this.inputs.forEach(cast => tx.input(cast.toInput()))
+    this.outputs.forEach(cast => tx.output(cast.toOutput()))
 
     // If changeScript exists, calculate the change and add to tx
     if (this.changeScript) {
       const rates = this.options.rates
       const rate = Number.isInteger(rates) ? rates : rates.standard
       const fee = this.calcRequiredFee()
-      const extraFee = Math.ceil(txOutSize(this.changeScript) * rate / 1000)
+      const extraFee = Math.ceil(outputSize(this.changeScript) * rate / 1000)
       const change = (this.inputSum - this.outputSum) - (fee + extraFee)
       if (change > 0) {
         tx.output(new Transaction.Output(this.changeScript, change, tx))
@@ -177,30 +177,38 @@ export class Forge {
   }
 }
 
+/**
+ * TODO
+ */
+export function forge(params = {}) {
+  return new Forge(params)
+}
+
+/**
+ * TODO
+ */
 export function forgeTx(params = {}) {
   const forge = new Forge(params)
   return forge.toTx()
 }
 
-export function createForge(params = {}) {
-  return new Forge(params)
-}
-
-
-function txInSize(script) {
+// TODO
+function inputSize(script) {
   const buf = new BufferWriter()
   writeVarint(buf, script.length)
   buf.write(script.buffer)
   return 36 + buf.length + 4
 }
 
-function txOutSize(script) {
+// TODO
+function outputSize(script) {
   const buf = new BufferWriter()
   writeVarint(buf, script.length)
   buf.write(script.buffer)
   return 8 + buf.length
 }
 
+// TODO
 function varintSize(num) {
   const buf = new BufferWriter()
   writeVarint(buf, num)

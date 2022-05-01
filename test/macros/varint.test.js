@@ -1,6 +1,6 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { ScriptBuilder, serializeScript } from '../../src/classes/script-builder.js'
+import { Tape, toScript } from '../../src/classes/tape.js'
 import { num } from '../../src/helpers/index.js'
 import { getVarint, readVarint, trimVarint } from '../../src/macros/index.js'
 import { verifyScript } from '../../src/extra/verify-script.js'
@@ -14,10 +14,10 @@ test('getVarint() gets the varint from the top stack element and puts on top', t
     const buf = new BufferWriter()
     writeVarint(buf, data.length)
     buf.write(data)
-    const b = new ScriptBuilder()
+    const b = new Tape()
     b.push(buf).apply(getVarint)
 
-    const script = serializeScript(b)
+    const script = toScript(b)
     const { stack } = verifyScript([], script)
 
     const expected = [Array.from(buf.toBuffer()), num(bytes)]
@@ -32,10 +32,10 @@ test.only('readVarint() reads the varint from the top stack item and puts the en
     writeVarint(buf, data.length)
     buf.write(data)
     buf.write([1,2,3,4])
-    const b = new ScriptBuilder()
+    const b = new Tape()
     b.push(buf).apply(readVarint)
 
-    const script = serializeScript(b)
+    const script = toScript(b)
     const { stack } = verifyScript([], script)
 
     const expected = [[1, 2, 3, 4], Array.from(data)]
@@ -49,10 +49,10 @@ test.only('trimVarint() trims the varint from the leading bytes of the top stack
     const buf = new BufferWriter()
     writeVarint(buf, data.length)
     buf.write(data)
-    const b = new ScriptBuilder()
+    const b = new Tape()
     b.push(buf).apply(trimVarint)
 
-    const script = serializeScript(b)
+    const script = toScript(b)
     const { stack } = verifyScript([], script)
 
     const expected = [Array.from(data)]

@@ -2,12 +2,12 @@ import nimble from '@runonbitcoin/nimble'
 
 const { BufferWriter, Script } = nimble.classes
 const { opcodes } = nimble.constants
-const { isBuffer, decodeScriptChunks } = nimble.functions
+const { isBuffer } = nimble.functions
 
 /**
  * TODO
  */
-export class ScriptBuilder {
+export class Tape {
   constructor(cast) {
     this.cast = cast ? cast : { script: this }
     this.chunks = []
@@ -46,8 +46,8 @@ export class ScriptBuilder {
     }
 
     switch(typeof data) {
-      case 'number': return pushByte(this, data);
-      case 'string': return pushString(this, data);
+      case 'number': return this.push(opcode(data));
+      case 'string': return this.push(string(data));
     }
 
     throw new Error(`invalid push value. type ${typeof data} not supported.`)
@@ -81,11 +81,11 @@ export class ScriptBuilder {
 /**
  * TODO
  */
-export function serializeScript(script) {
+export function toScript(tape) {
   const buf = new BufferWriter()
 
-  for (let i = 0; i < script.chunks.length; i++) {
-    const chunk = script.chunks[i]
+  for (let i = 0; i < tape.chunks.length; i++) {
+    const chunk = tape.chunks[i]
 
     if (Number.isInteger(chunk.opcode)) {
       buf.write([chunk.opcode])
@@ -112,18 +112,17 @@ export function serializeScript(script) {
   return new Script(buf.toBuffer())
 }
 
-function pushByte(script, byte) {
+function opcode(byte) {
   if (!Number.isInteger(byte) || !Object.values(opcodes).includes(byte)) {
     throw new Error('Invalid push value. Must be valid OP CODE byte value.')
   }
 
-  return script.push({ opcode: byte })
+  return { opcode: byte }
 }
 
-function pushString(script, str) {
+function string(str) {
   const enc = new TextEncoder()
-  const buf = enc.encode(str)
-  return script.push(buf)
+  return enc.encode(str)
 }
 
 function uint8(num) {

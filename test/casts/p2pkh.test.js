@@ -1,22 +1,22 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { casts, createUTXO } from '../../src/index.js'
+import { casts, toUTXO } from '../../src/index.js'
 
 const { P2PKH } = casts
 const privkey = nimble.PrivateKey.fromRandom()
 const address = privkey.toPublicKey().toAddress()
-const utxo = createUTXO({
+const utxo = toUTXO({
   txid: '0000000000000000000000000000000000000000000000000000000000000000',
   vout: 0
 })
 
 test('P2PKH.lock() locks satoshis to an address', t => {
   const cast = P2PKH.lock(1000, { address })
-  const txout = cast.toTxOut()
+  const output = cast.toOutput()
   const script = cast.toScript()
   
-  t.is(txout.satoshis, 1000)
-  t.deepEqual(txout.script, script)
+  t.is(output.satoshis, 1000)
+  t.deepEqual(output.script, script)
   t.regex(script.toASM(), /^OP_DUP OP_HASH160 [0-9a-f]{40} OP_EQUALVERIFY OP_CHECKSIG$/)
 })
 
@@ -31,12 +31,12 @@ test('P2PKH.lock() throws if arguments invalid', t => {
 
 test('P2PKH.unlock() unlocks UTXO with a privkey', t => {
   const cast = P2PKH.unlock(utxo, { privkey })
-  const txin = cast.toTxIn()
+  const input = cast.toInput()
   const script = cast.toScript()
 
-  t.is(txin.txid, utxo.txid)
-  t.is(txin.vout, utxo.vout)
-  t.deepEqual(txin.script, script)
+  t.is(input.txid, utxo.txid)
+  t.is(input.vout, utxo.vout)
+  t.deepEqual(input.script, script)
   t.regex(script.toASM(), /^0{142} [0-9a-f]{66}$/)
 })
 

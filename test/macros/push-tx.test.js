@@ -1,7 +1,7 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { casts, forgeTx, Cast, UTXO } from '../../src/index.js'
-import { ScriptBuilder, serializeScript } from '../../src/classes/script-builder.js'
+import { casts, forgeTx, Cast, getUTXO } from '../../src/index.js'
+import { Tape, toScript } from '../../src/classes/tape.js'
 import { num } from '../../src/helpers/index.js'
 import {
   getVersion,
@@ -31,7 +31,7 @@ const prevTx = forgeTx({
   ]
 })
 
-const utxo = UTXO.fromTx(prevTx, 0)
+const utxo = getUTXO(prevTx, 0)
 
 const testTx = forgeTx({
   inputs: [
@@ -44,18 +44,18 @@ const preimg = preimage(testTx, 0, prevOut.script, prevOut.satoshis, 0x41)
 
 
 test('getVersion() puts tx version on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getVersion)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   t.deepEqual(stack[stack.length-1], [1])
 })
 
 test('getPrevoutsHash() puts prev outpoints hash on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getPrevoutsHash)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   const expected = Array.from(testTx._hashPrevouts)
@@ -63,9 +63,9 @@ test('getPrevoutsHash() puts prev outpoints hash on top of stack', t => {
 })
 
 test('getSequenceHash() puts txin sequence hash on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getSequenceHash)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   const expected = Array.from(testTx._hashSequence)
@@ -73,9 +73,9 @@ test('getSequenceHash() puts txin sequence hash on top of stack', t => {
 })
 
 test('getOutpoint() puts txin outpoint on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getOutpoint)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   const expected = Array.from(decodeHex(prevTx.hash).reverse()).concat([0,0,0,0])
@@ -83,36 +83,36 @@ test('getOutpoint() puts txin outpoint on top of stack', t => {
 })
 
 test('getScript() puts lock script on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getScript)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   t.deepEqual(stack[stack.length-1], prevOut.script.buffer)
 })
 
 test('getSatoshis() puts lock satoshis on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getSatoshis)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   t.deepEqual(stack[stack.length-1], num(50000))
 })
 
 test('getSequence() puts txin sequence on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getSequence)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   t.deepEqual(stack[stack.length-1], num(0xFFFFFFFF))
 })
 
 test('getOutputsHash() puts tx outputs hash on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getOutputsHash)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   const expected = Array.from(testTx._hashOutputsAll)
@@ -120,38 +120,38 @@ test('getOutputsHash() puts tx outputs hash on top of stack', t => {
 })
 
 test('getLocktime() puts tx locktime on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getLocktime).push([1])
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   t.deepEqual(stack[stack.length-2], [])
 })
 
 test('getSighashType() puts tx sighash type on top of stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.push(preimg).apply(getSighashType)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript([], script)
 
   t.deepEqual(stack[stack.length-1], [0x41])
 })
 
 test('pushTx() pushes the tx preimage onto the stack', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.cast.ctx = { tx: testTx, vin: 0 }
   b.cast.utxo = utxo
   b.apply(pushTx)
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript(script, [])
 
   t.deepEqual(stack[0], Array.from(preimg))
 })
 
 test('pushTx() pushes zero bytes placeholder onto the stack without context', t => {
-  const b = new ScriptBuilder()
+  const b = new Tape()
   b.apply(pushTx).push([1])
-  const script = serializeScript(b)
+  const script = toScript(b)
   const { stack } = verifyScript(script, [])
 
   t.deepEqual(stack[0], new Array(181).fill(0))

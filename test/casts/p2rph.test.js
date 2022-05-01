@@ -1,6 +1,6 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { casts, createUTXO } from '../../src/index.js'
+import { casts, toUTXO } from '../../src/index.js'
 import { generateK, calculateR } from '../../src/extra/r-puzzle.js'
 
 const { decodeHex, encodeHex, isBuffer } = nimble.functions
@@ -8,7 +8,7 @@ const { P2RPH } = casts
 const k = generateK()
 const r = calculateR(k)
 const privkey = nimble.PrivateKey.fromRandom()
-const utxo = createUTXO({
+const utxo = toUTXO({
   txid: '0000000000000000000000000000000000000000000000000000000000000000',
   vout: 0
 })
@@ -31,11 +31,11 @@ test('calculateR() returns R from K', t => {
 
 test('P2RPH.lock() locks satoshis to an R value', t => {
   const cast = P2RPH.lock(1000, { r })
-  const txout = cast.toTxOut()
+  const output = cast.toOutput()
   const script = cast.toScript()
   
-  t.is(txout.satoshis, 1000)
-  t.deepEqual(txout.script, script)
+  t.is(output.satoshis, 1000)
+  t.deepEqual(output.script, script)
   t.regex(script.toASM(), /^OP_OVER OP_3 OP_SPLIT OP_NIP OP_1 OP_SPLIT OP_SWAP OP_SPLIT OP_DROP OP_HASH160 [0-9a-f]{40} OP_EQUALVERIFY OP_TUCK OP_CHECKSIGVERIFY OP_CHECKSIG$/)
 })
 
@@ -47,12 +47,12 @@ test('P2RPH.lock() throws if arguments invalid', t => {
 
 test('P2RPH.unlock() unlocks UTXO with given K value', t => {
   const cast = P2RPH.unlock(utxo, { k, privkey })
-  const txin = cast.toTxIn()
+  const input = cast.toInput()
   const script = cast.toScript()
 
-  t.is(txin.txid, utxo.txid)
-  t.is(txin.vout, utxo.vout)
-  t.deepEqual(txin.script, script)
+  t.is(input.txid, utxo.txid)
+  t.is(input.vout, utxo.vout)
+  t.deepEqual(input.script, script)
   t.regex(script.toASM(), /^(0{142} ?){2} [0-9a-f]{66}$/)
 })
 

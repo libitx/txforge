@@ -5,11 +5,11 @@ const { OpReturn } = casts
 
 test('OpReturn.lock() takes a single data binary parameter', t => {
   const cast = OpReturn.lock(0, { data: 'hello world' })
-  const txout = cast.toTxOut()
+  const output = cast.toOutput()
   const script = cast.toScript()
 
-  t.is(txout.satoshis, 0)
-  t.deepEqual(txout.script, script)
+  t.is(output.satoshis, 0)
+  t.deepEqual(output.script, script)
   t.regex(script.toASM(), /^0 OP_RETURN [0-9a-f]{22}$/)
 })
 

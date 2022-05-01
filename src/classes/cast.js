@@ -1,10 +1,10 @@
 import nimble from '@runonbitcoin/nimble'
 import { forgeTx } from './forge.js'
-import { ScriptBuilder, serializeScript } from './script-builder.js'
-import { UTXO } from './utxo.js'
-import { verifyScript } from '../extra/verify-script.js'
+import { Tape, toScript } from './tape.js'
+import { getUTXO } from './utxo.js'
 
 const { Transaction } = nimble.classes
+const { verifyScript } = nimble.functions
 
 export class Cast {
   constructor(mode, { params, opts, satoshis, utxo }) {
@@ -13,7 +13,7 @@ export class Cast {
     this.opts     = opts
     this.satoshis = satoshis
     this.utxo     = utxo
-    this.script   = new ScriptBuilder(this)
+    this.script   = new Tape(this)
     this.ctx      = null
     this.init(params, opts)
   }
@@ -41,7 +41,7 @@ export class Cast {
       options: { debug: true }
     })
 
-    const utxo = UTXO.fromTx(lockTx, 0)
+    const utxo = getUTXO(lockTx, 0)
 
     const tx = forgeTx({
       inputs: [this.unlock(utxo, unlockParams)]
@@ -84,37 +84,37 @@ export class Cast {
    * TODO
    */
   toScript() {
-    this.script = new ScriptBuilder(this)
+    this.script = new Tape(this)
     if (this.mode === 'lock') {
       this.lockingScript(this.params, this.opts)
     } else {
       this.unlockingScript(this.params, this.opts)
     }
 
-    return serializeScript(this.script)
+    return toScript(this.script)
   }
 
   /**
    * TODO
    */
-  toTxIn() {
+  toInput() {
     if (this.mode !== 'unlock') {
-      throw new Error('Invalid mode. `toTxIn()` only available in `unlock` mode.')
+      throw new Error('invalid mode. `toInput()` only available in `unlock` mode.')
     }
 
-    const { txid, vout, txout } = this.utxo
+    const { txid, vout, output } = this.utxo
     const script = this.toScript()
     const sequence = 0xFFFFFFFF // todo - fetch from options
 
-    return new Transaction.Input(txid, vout, script, sequence, txout)
+    return new Transaction.Input(txid, vout, script, sequence, output)
   }
 
   /**
    * TODO
    */
-  toTxOut() {
+  toOutput() {
     if (this.mode !== 'lock') {
-      throw new Error('Invalid mode. `toTxOut()` only available in `lock` mode.')
+      throw new Error('invalid mode. `toOutput()` only available in `lock` mode.')
     }
 
     const script = this.toScript()
