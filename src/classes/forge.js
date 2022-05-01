@@ -10,6 +10,9 @@ const defaults = {
   sort: false,
 }
 
+/**
+ * TODO
+ */
 export class Forge {
   constructor({ inputs, outputs, changeTo, changeScript, locktime, options } = {}) {
     this.inputs = []
@@ -180,7 +183,7 @@ export class Forge {
 /**
  * TODO
  */
-export function forge(params = {}) {
+export function createForge(params = {}) {
   return new Forge(params)
 }
 

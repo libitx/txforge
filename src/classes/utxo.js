@@ -1,10 +1,16 @@
 import nimble from '@runonbitcoin/nimble'
+import { getOpt } from './shared.js'
 
 const { Script, Transaction } = nimble.classes
 const { isHex } = nimble.functions
 
 /**
- * TODO
+ * A UTXO is an Unspent Transaction Output.
+ * 
+ * Unlocking Casts spend UTXOs so it is usually required to prepare UTXO
+ * instances using data from your UTXO database or api.
+ * 
+ * See {@link createUTXO}.
  */
 export class UTXO {
   constructor({ txid, vout, satoshis, script } = {}) {
@@ -22,11 +28,24 @@ export class UTXO {
 }
 
 /**
- * TODO
+ * Creates a UTXO from the given parameters.
+ * 
+ * Will intelligently handle parameters from most UTXO apis.
+ * 
+ * @param {string|nimble.Script} params.script Previous output script
+ * @param {string?} params.txid Transaction ID
+ * @param {string?} params.tx_hash Transaction ID
+ * @param {number?} params.satoshis Previous output satoshis 
+ * @param {number?} params.value Previous output satoshis
+ * @param {number?} params.vout Previous output index
+ * @param {number?} params.outputIndex Previous output index
+ * @param {number?} params.tx_pos Previous output index
+ * @returns {UTXO}
  */
-export function toUTXO({ txid, script, ...params } = {}) {
-  const vout = getOpt(params, ['vout', 'outputIndex'])
-  const satoshis = getOpt(params, ['satoshis', 'amount'])
+export function createUTXO({ script, ...params } = {}) {
+  const txid = getOpt(params, ['txid', 'tx_hash'])
+  const vout = getOpt(params, ['vout', 'outputIndex', 'tx_pos'])
+  const satoshis = getOpt(params, ['satoshis', 'value'])
   
   if (isHex(script)) {
     script = Script.fromHex(script)
@@ -36,7 +55,10 @@ export function toUTXO({ txid, script, ...params } = {}) {
 }
 
 /**
- * TODO
+ * Get a UTXO from the given transaction and output index.
+ * 
+ * @param {nimble.Transaction} tx Transaction
+ * @param {number} vout Transaction output index
  */
 export function getUTXO(tx, vout) {
   if (!tx || !tx.outputs[vout]) {
@@ -49,13 +71,4 @@ export function getUTXO(tx, vout) {
     satoshis: tx.outputs[vout].satoshis,
     script: tx.outputs[vout].script,
   })
-}
-
-function getOpt(obj = {}, keys = []) {
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i], val = obj[key]
-    if (typeof obj[keys[i]] !== 'undefined') {
-      return val
-    }
-  }
 }

@@ -1,6 +1,6 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { casts, toUTXO } from '../../src/index.js'
+import { casts, createUTXO } from '../../src/index.js'
 import { generateK, calculateR } from '../../src/extra/r-puzzle.js'
 
 const { decodeHex, encodeHex, isBuffer } = nimble.functions
@@ -8,7 +8,7 @@ const { P2RPH } = casts
 const k = generateK()
 const r = calculateR(k)
 const privkey = nimble.PrivateKey.fromRandom()
-const utxo = toUTXO({
+const utxo = createUTXO({
   txid: '0000000000000000000000000000000000000000000000000000000000000000',
   vout: 0
 })
