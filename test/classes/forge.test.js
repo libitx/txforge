@@ -1,12 +1,12 @@
 import test from 'ava'
 import fs from 'fs'
 import nimble from '@runonbitcoin/nimble'
-import { Forge, casts, createUTXO } from '../../src/index.js'
+import { Forge, casts, createForge, createUTXO, forgeTx } from '../../src/index.js'
 
 const path = new URL('../vectors/bip69.json', import.meta.url).pathname
 const bip69 = JSON.parse(fs.readFileSync(path))
 
-const { P2PK, OpReturn, Raw } = casts
+const { P2PK, P2PKH, OpReturn, Raw } = casts
 const privkey = nimble.PrivateKey.fromRandom()
 const pubkey = privkey.toPublicKey()
 const address = pubkey.toAddress()
@@ -14,34 +14,6 @@ const utxo = {
   txid: '0000000000000000000000000000000000000000000000000000000000000000',
   vout: 0
 }
-
-test('forge.changeTo gets undefined by default', t => {
-  const forge = new Forge()
-  t.is(forge.changeTo, undefined)
-})
-
-test('forge.changeTo gets undefined if changeScript is not P2PKH', t => {
-  const forge = new Forge({ changeScript: nimble.Script.fromASM('OP_TRUE')})
-  t.is(forge.changeTo, undefined)
-})
-
-test('forge.changeTo gets address if changeScript is P2PKH', t => {
-  const changeScript = nimble.Script.templates.P2PKHLockScript.fromAddress(address)
-  const forge = new Forge({ changeScript })
-  t.is(forge.changeTo, address.toString())
-})
-
-test('forge.changeTo sets P2PKH changeScript from address', t => {
-  const forge = new Forge()
-  forge.changeTo = address
-  t.is(forge.changeScript.constructor.name, 'P2PKHLockScript')
-})
-
-test('forge.changeTo sets P2PKH changeScript from address string', t => {
-  const forge = new Forge()
-  forge.changeTo = address.toString()
-  t.is(forge.changeScript.constructor.name, 'P2PKHLockScript')
-})
 
 test('forge.inputSum gets sum of all inputs', t => {
   const forge = new Forge()
@@ -113,6 +85,33 @@ test('forge.addOutput() throws if invalid value given', t => {
   
   t.throws(() => forge.addOutput('not a cast'))
   t.throws(() => forge.addOutput(P2PK.unlock(createUTXO(), { privkey })))
+})
+
+test('forge.changeTo() sets changeScript to any given class and params', t => {
+  const forge = new Forge()
+  forge.changeTo(P2PK, { pubkey })
+
+  t.true(forge.changeScript instanceof nimble.Script)
+  t.is(forge.changeScript.length, 35)
+})
+
+test('forge.changeTo() accepts P2PKH params as sensible default', t => {
+  const forge = new Forge()
+  forge.changeTo({ address })
+  t.true(forge.changeScript instanceof nimble.Script)
+  t.is(forge.changeScript.length, 25)
+})
+
+test('forge.changeTo() accepts Raw params as sensible default', t => {
+  const forge = new Forge()
+  forge.changeTo({ script: '01' })
+  t.true(forge.changeScript instanceof nimble.Script)
+  t.is(forge.changeScript.length, 2)
+})
+
+test('forge.changeTo() throws error if invalid cast params given', t => {
+  const forge = new Forge()
+  t.throws(_ => forge.changeTo({ foo: 'bar' }))
 })
 
 function assertBetween(val, min, max) {
@@ -202,11 +201,132 @@ test('forge.toTx() returns signed tx with change', t => {
       P2PK.lock(5000, { pubkey }),
       P2PK.lock(1000, { pubkey })
     ],
-    changeScript: nimble.Script.templates.P2PKHLockScript.fromAddress(address)
+    change: { address }
   })
 
   const tx = forge.toTx()
   t.is(tx.outputs.length, 3)
   t.is(tx.outputs[2].satoshis, 3987)
   t.is(tx.fee, 13)
+})
+
+test('createForge() sets given inputs and outputs', t => {
+  const forge = createForge({
+    inputs: [
+      P2PKH.unlock(createUTXO(), { privkey }),
+      P2PK.unlock(createUTXO(), { privkey })
+    ],
+    outputs: [
+      P2PKH.lock(10000, { address }),
+      P2PK.lock(10000, { pubkey }),
+      OpReturn.lock(0, { data: 'hello world' })
+    ]
+  })
+
+  t.is(forge.inputs.length, 2)
+  t.is(forge.outputs.length, 3)
+  t.is(forge.outputSum, 20000)
+})
+
+test('createForge() sets given change param tuple', t => {
+  const forge = createForge({
+    change: [P2PK, { pubkey }]
+  })
+
+  t.true(forge.changeScript instanceof nimble.Script)
+  t.is(forge.changeScript.length, 35)
+})
+
+test('createForge() sets given change param as P2PKH script', t => {
+  const forge = createForge({
+    change: { address }
+  })
+
+  t.true(forge.changeScript instanceof nimble.Script)
+  t.is(forge.changeScript.length, 25)
+})
+
+test('createForge() sets given change param as Raw script', t => {
+  const forge = createForge({
+    change: { script: 'ae' }
+  })
+
+  t.true(forge.changeScript instanceof nimble.Script)
+  t.is(forge.changeScript.length, 2)
+})
+
+test('createForge() sets given locktime', t => {
+  const forge = createForge({
+    locktime: 999999
+  })
+
+  t.is(forge.locktime, 999999)
+})
+
+test('createForge() sets given options', t => {
+  const forge = createForge({
+    options: { sort: true, foo: 'bar' }
+  })
+
+  t.is(forge.options.sort, true)
+  t.is(forge.options.foo, 'bar')
+  t.deepEqual(forge.options.rates, { standard: 50, data: 50 })
+})
+
+test('forgeTx() returns a built transaction', t => {
+  const txid = '0000000000000000000000000000000000000000000000000000000000000000'
+  const tx = forgeTx({
+    inputs: [
+      P2PKH.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
+      P2PK.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey })
+    ],
+    outputs: [
+      P2PKH.lock(10000, { address }),
+      P2PK.lock(10000, { pubkey }),
+      OpReturn.lock(0, { data: 'hello world' })
+    ]
+  })
+
+  t.is(tx.inputs.length, 2)
+  t.is(tx.outputs.length, 3)
+})
+
+test('forgeTx() sets change on the tx', t => {
+  const txid = '0000000000000000000000000000000000000000000000000000000000000000'
+  const tx = forgeTx({
+    inputs: [
+      P2PKH.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
+    ],
+    outputs: [
+      P2PKH.lock(1000, { address }),
+    ],
+    change: { address }
+  })
+
+  t.is(tx.inputs.length, 1)
+  t.is(tx.outputs.length, 2)
+})
+
+test('forgeTx() sets locktime on the tx', t => {
+  const tx = forgeTx({
+    locktime: 999999
+  })
+
+  t.is(tx.locktime, 999999)
+})
+
+test('forgeTx() uses given rates', t => {
+  const txid = '0000000000000000000000000000000000000000000000000000000000000000'
+  const tx = forgeTx({
+    inputs: [
+      P2PKH.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
+    ],
+    outputs: [
+      OpReturn.lock(0, { data: new Array(1000).fill(0) }),
+    ],
+    change: { address },
+    options: { rates: 1000 }
+  })
+
+  t.true(tx.fee > 1200)
 })

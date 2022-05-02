@@ -159,7 +159,7 @@ export function checkTx() {
  */
 export function checkTxVerify() {
   this.script.apply(checkTx)
-  this.script.chunks.pop()
+  this.script.cells.pop()
   this.script.push(OP_CHECKSIGVERIFY)
 }
 
@@ -232,7 +232,7 @@ export function checkTxOpt() {
  */
 export function checkTxOptVerify() {
   this.script.apply(checkTxOpt)
-  this.script.chunks.pop()
+  this.script.cells.pop()
   this.script.push(OP_CHECKSIGVERIFY)
 }
 

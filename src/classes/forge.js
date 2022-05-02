@@ -1,6 +1,6 @@
 import nimble from '@runonbitcoin/nimble'
 import { isCast } from './cast.js'
-import { P2PKH } from '../casts/index.js'
+import { P2PKH, Raw } from '../casts/index.js'
 
 const { BufferWriter, Transaction } = nimble.classes
 const { isBuffer, writeVarint } = nimble.functions
@@ -11,12 +11,19 @@ const defaults = {
 }
 
 /**
- * TODO
+ * Forge is an industrial strength transaction builder.
+ * 
+ * Use Casts to forge transactions of any shape and size, using any script
+ * template imaginable.
+ * 
+ * @see createForge
+ * @see forgeTx
  */
 export class Forge {
-  constructor({ inputs, outputs, changeTo, changeScript, locktime, options } = {}) {
+  constructor({ inputs, outputs, change, locktime, options } = {}) {
     this.inputs = []
     this.outputs = []
+    this.changeScript = null
     this.locktime = 0
     this.options = {
       ...defaults,
@@ -26,26 +33,15 @@ export class Forge {
     if (inputs) this.addInput(inputs)
     if (outputs) this.addOutput(outputs)
 
-    if (changeTo) {
-      this.changeTo = changeTo
-    } else if (changeScript && isBuffer(changeScript.buffer)) {
-      this.changeScript = changeScript
+    if (Array.isArray(change)) {
+      this.changeTo(...change)
+    } else if (typeof change === 'object') {
+      this.changeTo(change)
     }
 
     if (Number.isInteger(locktime)) {
       this.locktime = locktime
     }
-  }
-
-  get changeTo() {
-    if (this.changeScript && typeof this.changeScript.toAddress === 'function') {
-      return this.changeScript.toAddress().toString()
-    }
-  }
-
-  set changeTo(address) {
-    const cast = P2PKH.lock(0, { address })
-    this.changeScript = cast.toScript()
   }
 
   get inputSum() {
@@ -57,7 +53,10 @@ export class Forge {
   }
 
   /**
-   * TODO
+   * Adds the given unlocking Cast (or array of Casts) to the forge.
+   * 
+   * @param {Cast|Cast[]} cast Unlocking cast(s)
+   * @returns {Forge}
    */
   addInput(cast) {
     if (Array.isArray(cast)) {
@@ -75,7 +74,10 @@ export class Forge {
   }
 
   /**
-   * TODO
+   * Adds the given locking Cast (or array of Casts) to the forge.
+   * 
+   * @param {Cast|Cast[]} cast Locking cast(s)
+   * @returns {Forge}
    */
   addOutput(cast) {
     if (Array.isArray(cast)) {
@@ -93,7 +95,47 @@ export class Forge {
   }
 
   /**
-   * TODO
+   * Sets the forge changeScript based on the given Cast class and params.
+   * The first argument can be omitted if the params contains an `address` or
+   * `script` property - in such cases the `P2PKH` or `Raw` Casts are used to
+   * create the changeScript.
+   * 
+   * ## Examples
+   * 
+   * ```
+   * // Sets a P2PK change script
+   * forge.changeTo(P2PK, { pubkey })
+   * 
+   * // Will automatically use P2PKH
+   * forge.changeTo({ address })
+   * 
+   * // Will automatically use Raw
+   * forge.changeTo({ script })
+   * ```
+   * 
+   * @param {class|object} classOrParams Cast class or lock parameters
+   * @param {object?} params Lock parameters
+   * @returns 
+   */
+  changeTo(classOrParams, params) {
+    if (Object.getPrototypeOf(classOrParams).name === 'Cast') {
+      this.changeScript = classOrParams.lock(0, params || {}).toScript()
+    } else if (!!classOrParams.address) {
+      this.changeScript = P2PKH.lock(0, classOrParams).toScript()
+    } else if (!!classOrParams.script) {
+      this.changeScript = Raw.lock(0, classOrParams).toScript()
+    } else {
+      throw new Error('invalid change params. must give cast class and lock params')
+    }
+
+    return this
+  }
+
+  /**
+   * Calculates the fee required for miners to accept the transaction (according
+   * to the configured rates).
+   * 
+   * @param {object?} rates Miner rates
    */
   calcRequiredFee(rates = this.options.rates) {
     const inScripts = this.inputs.map(i => i.toScript())
@@ -130,7 +172,13 @@ export class Forge {
   }
 
   /**
-   * TODO
+   * Sorts the inputs and outputs according to 
+   * {@link https://github.com/bitcoin/bips/blob/master/bip-0069.mediawiki BIP-69}.
+   * 
+   * BIP-69 defines deterministic lexographical indexing of transaction inputs
+   * and outputs.
+   * 
+   * @returns {Forge}
    */
   sort() {
     this.inputs.sort((a, b) => {
@@ -145,7 +193,9 @@ export class Forge {
   }
 
   /**
-   * TODO
+   * Builds and returns a signed transaction.
+   * 
+   * @returns {nimble.Transaction}
    */
   toTx() {
     if (this.options.sort) {
@@ -170,6 +220,10 @@ export class Forge {
       }
     }
 
+    if (this.locktime > 0) {
+      tx.locktime = this.locktime
+    }
+
     // Second pass replaces signed inputs
     this.inputs.forEach((cast, vin) => {
       cast.setCtx(tx, vin)
@@ -181,21 +235,63 @@ export class Forge {
 }
 
 /**
- * TODO
+ * Creates and returns a forge instance from the given params.
+ * 
+ * ## Examples
+ * 
+ * ```
+ * createForge({
+ *   inputs: [
+ *     P2PKH.unlock(utxo, { privkey })
+ *   ],
+ *   outputs: [
+ *     P2PKH.lock(10000, { address })
+ *   ],
+ *   change: { address: changeAddress }
+ * })
+ * ```
+ * 
+ * @param {cast[]} params.inputs Array of unlocking casts
+ * @param {cast[]} params.outputs Array of locking casts
+ * @param {[class, object]|object?} params.change Change Cast class and lock parameters
+ * @param {number?} params.locktime Transaction locktime integer
+ * @param {object?} params.options.rates Miner fee quote
+ * @param {boolean?} params.options.sort Automatically sort using BIP-69
+ * @returns {Cast}
  */
 export function createForge(params = {}) {
   return new Forge(params)
 }
 
 /**
- * TODO
+ * As {@link createForge} but returns built and signed transaction.
+ * 
+ * ```
+ * forgeTx({
+ *   inputs: [
+ *     P2PKH.unlock(utxo, { privkey })
+ *   ],
+ *   outputs: [
+ *     P2PKH.lock(10000, { address })
+ *   ],
+ *   change: { address: changeAddress }
+ * })
+ * ```
+ * 
+ * @param {cast[]} params.inputs Array of unlocking casts
+ * @param {cast[]} params.outputs Array of locking casts
+ * @param {[class, object]|object?} params.change Change Cast class and lock parameters
+ * @param {number?} params.locktime Transaction locktime integer
+ * @param {object?} params.options.rates Miner fee quote
+ * @param {boolean?} params.options.sort Automatically sort using BIP-69
+ * @returns {nimble.Transaction}
  */
 export function forgeTx(params = {}) {
   const forge = new Forge(params)
   return forge.toTx()
 }
 
-// TODO
+// Returns the byte size of a TxIn with the given script.
 function inputSize(script) {
   const buf = new BufferWriter()
   writeVarint(buf, script.length)
@@ -203,7 +299,7 @@ function inputSize(script) {
   return 36 + buf.length + 4
 }
 
-// TODO
+// Returns the byte size of a TxOut with the given script.
 function outputSize(script) {
   const buf = new BufferWriter()
   writeVarint(buf, script.length)
@@ -211,7 +307,7 @@ function outputSize(script) {
   return 8 + buf.length
 }
 
-// TODO
+// Returns the byte size of a VarInt of the given integer.
 function varintSize(num) {
   const buf = new BufferWriter()
   writeVarint(buf, num)
