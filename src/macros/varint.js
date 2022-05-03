@@ -16,7 +16,15 @@ const {
 } = nimble.constants.opcodes
 
 /**
- * TODO
+ * Assuming the top stack item is a VarInt encoded byte vector, the VarInt is
+ * copied and placed on top of the stack as a ScriptNum.
+ * 
+ * The original element is not removed.
+ * 
+ * Use this function if you would like to to extract the VarInt number, yet
+ * leave the original data on the stack.
+ * 
+ * @returns {void}
  */
 export function getVarint() {
   this.script
@@ -24,7 +32,7 @@ export function getVarint() {
     .apply(varintSwitch, [doGetVarint])
 }
 
-// TODO
+// Extract and decode the VarInt number
 function doGetVarint(bytes) {
   if (bytes === 1) {
     this.script.push(OP_NIP)
@@ -41,13 +49,22 @@ function doGetVarint(bytes) {
 }
 
 /**
- * TODO
+ * Assuming the top stack item is a VarInt encoded byte vector, the VarInt
+ * is extracted and placed on top of the stack as a ScriptNum.
+ * 
+ * The original element is removed and any remaining data is second on the
+ * stack.
+ * 
+ * Use this function if the VarInt is part of a larger string of bytes and you
+ * would like to extract the data whilst retaining the remaining bytes.
+ * 
+ * @returns {void}
  */
 export function readVarint() {
   this.script.apply(varintSwitch, [doReadVarint])
 }
 
-// TODO
+// Extract the VarInt data and place on top
 function doReadVarint(bytes) {
   if (bytes > 1) {
     this.script
@@ -64,12 +81,22 @@ function doReadVarint(bytes) {
 }
 
 /**
- * TODO
+ * Assuming the top stack item is a VarInt encoded binary, the VarInt prefix
+ * is trimmed from the leading bytes and the encoded data is placed on top of
+ * the stack.
+ * 
+ * The original element is removed.
+ * 
+ * Use this function if you would like to cleanly trim the VarInt number from
+ * the encoded data.
+ * 
+ * @returns {void}
  */
 export function trimVarint() {
   this.script.apply(varintSwitch, [doTrimVarint])
 }
 
+// Trim varint from leading bytes
 function doTrimVarint(bytes) {
   this.script.push(OP_DROP)
 
@@ -78,7 +105,7 @@ function doTrimVarint(bytes) {
   }
 }
 
-// TODO
+// Shared VarInt switch statement
 function varintSwitch(handleVarint) {
   this.script
     .push(OP_1)

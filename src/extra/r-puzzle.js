@@ -5,8 +5,19 @@ const { encodeHex, generatePrivateKey } = nimble.functions
 
 const secp256k1_N = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141')
 
+/**
+ * Generates and returns a random K value.
+ * 
+ * @returns {Uint8Array}
+ */
 export const generateK = generatePrivateKey
 
+/**
+ * Calculates and returns the R value from the give K value.
+ * 
+ * @param {Uint8Array} k K value
+ * @returns {Uint8Array}
+ */
 export function calculateR(k) {
   const memory = getMemoryBuffer()
   const privateKeyPos = memory.length - BN_SIZE
@@ -34,6 +45,7 @@ export function calculateR(k) {
   }
 }
 
+// Converts js bigint to uint8array
 function bnToBuf(bn) {
   var hex = BigInt(bn).toString(16);
   if (hex.length % 2) { hex = '0' + hex; }

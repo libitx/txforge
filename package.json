@@ -39,6 +39,6 @@
     "glob": "^8.0.1"
   },
   "ava": {
-    "concurrency": 8
+    "concurrency": 4
   }
 }
