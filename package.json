@@ -1,6 +1,6 @@
 {
   "name": "txforge",
-  "version": "0.2.6",
+  "version": "2.0.0-beta.1",
   "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
   "keywords": [
     "bitcoin",
@@ -23,6 +23,9 @@
       "import": "./src/*.js"
     }
   },
+  "main": "./dist/cjs/index.cjs",
+  "browser": "./dist/txforge.min.js",
+  "unpkg": "./dist/txforge.min.js",
   "packageManager": "yarn@3.2.0",
   "scripts": {
     "build": "yarn clean && node build.js",

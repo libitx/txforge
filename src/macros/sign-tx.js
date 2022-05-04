@@ -4,6 +4,15 @@ const { sighashFlags } = nimble.constants
 const { generateTxSignature } = nimble.functions
 const { ecdsaSignWithK, encodeDER, sighash } = nimble.functions
 
+/**
+ * Signs the transaction context and pushes the signature onto the script.
+ * 
+ * If no tx context is available then 71 bytes of zeros are pushed onto the
+ * script instead.
+ * 
+ * @param {nimble.PrivateKey} privkey Private key
+ * @returns {void}
+ */
 export function signTx(privkey) {
   // If ctx, create signature, otherwise empty 71 bytes
   const sig = this.ctx ?
@@ -21,6 +30,14 @@ export function signTx(privkey) {
   this.script.push(sig)
 }
 
+/**
+ * As {@link signTx} but can be passed a K which is used in the signature
+ * generation.
+ * 
+ * @param {nimble.PrivateKey} privkey Private key
+ * @param {Uint8Array} k K value
+ * @returns {void}
+ */
 export function signTxWithK(privkey, k) {
   // If ctx, create signature, otherwise empty 71 bytes
   const sig = this.ctx ?
@@ -38,6 +55,7 @@ export function signTxWithK(privkey, k) {
   this.script.push(sig)
 }
 
+// Generates the tx signature with custom K value
 function generateTxSigWithK(tx, vin, script, satoshis, privkey, k, flags) {
   const hash = sighash(tx, vin, script, satoshis, flags)
   const sig = ecdsaSignWithK(hash, k, privkey.number, privkey.toPublicKey().point)
