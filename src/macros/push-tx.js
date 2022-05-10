@@ -221,10 +221,7 @@ function prepareSighash() {
 function pushOrder() {
   this.script
     .push(ORDER_PREFIX)
-    .push([0])
-    .push(asm('OP_15 OP_NUM2BIN OP_INVERT OP_CAT'))
-    .push([0])
-    .push(OP_CAT)
+    .push(asm('00 OP_15 OP_NUM2BIN OP_INVERT OP_CAT 00 OP_CAT'))
 }
 
 // Divides the order by 2
@@ -235,9 +232,7 @@ function divOrder() {
 // Is the sighash MSB 0x00 or 0xFF
 function sighashMSBis0or255() {
   this.script
-    .push(asm('OP_ROT OP_3 OP_ROLL OP_DUP ff OP_EQUAL OP_SWAP'))
-    .push([0])
-    .push(asm('OP_EQUAL OP_BOOLOR OP_TUCK'))
+    .push(asm('OP_ROT OP_3 OP_ROLL OP_DUP ff OP_EQUAL OP_SWAP 00 OP_EQUAL OP_BOOLOR OP_TUCK'))
 }
 
 // Is the sighash mod greater than the secp256k1 order

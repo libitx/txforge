@@ -33,7 +33,7 @@
     "test": "ava test/**/*.test.js"
   },
   "dependencies": {
-    "@runonbitcoin/nimble": "runonbitcoin/nimble"
+    "@runonbitcoin/nimble": "^1.0.12"
   },
   "devDependencies": {
     "ava": "^4.2.0",

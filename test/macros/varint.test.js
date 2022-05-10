@@ -20,12 +20,12 @@ test('getVarint() gets the varint from the top stack element and puts on top', t
     const script = toScript(b)
     const { stack } = verifyScript([], script)
 
-    const expected = [Array.from(buf.toBuffer()), num(bytes)]
+    const expected = [buf.toBuffer(), num(bytes)]
     t.deepEqual(stack, expected)
   }
 })
 
-test.only('readVarint() reads the varint from the top stack item and puts the encoded data on top', t => {
+test('readVarint() reads the varint from the top stack item and puts the encoded data on top', t => {
   for (let bytes of [32, 320, 320000]) {
     const data = new Uint8Array(bytes).fill(1)
     const buf = new BufferWriter()
@@ -38,12 +38,12 @@ test.only('readVarint() reads the varint from the top stack item and puts the en
     const script = toScript(b)
     const { stack } = verifyScript([], script)
 
-    const expected = [[1, 2, 3, 4], Array.from(data)]
+    const expected = [new Uint8Array([1, 2, 3, 4]), data]
     t.deepEqual(stack, expected)
   }
 })
 
-test.only('trimVarint() trims the varint from the leading bytes of the top stack item', t => {
+test('trimVarint() trims the varint from the leading bytes of the top stack item', t => {
   for (let bytes of [32, 320, 320000]) {
     const data = new Uint8Array(bytes).fill(1)
     const buf = new BufferWriter()
@@ -55,7 +55,7 @@ test.only('trimVarint() trims the varint from the leading bytes of the top stack
     const script = toScript(b)
     const { stack } = verifyScript([], script)
 
-    const expected = [Array.from(data)]
+    const expected = [data]
     t.deepEqual(stack, expected)
   }
 })

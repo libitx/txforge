@@ -5,7 +5,7 @@ import { getUTXO } from './utxo.js'
 import { getOpt } from './shared.js'
 
 const { Transaction } = nimble.classes
-const { verifyScript } = nimble.functions
+import { verifyScript } from '../extra/verify-script.js'
 
 /**
  * Casts are Bitcoin script templates.
@@ -141,7 +141,7 @@ export class Cast {
       inputs: [this.unlock(utxo, unlockParams)]
     })
 
-    verifyScript(
+    const vm = verifyScript(
       tx.inputs[0].script,
       lockTx.outputs[0].script,
       tx,
@@ -149,7 +149,8 @@ export class Cast {
       lockTx.outputs[0].satoshis,
     )
 
-    return true
+    if (vm.error) throw vm.error
+    return vm.success
   }
 
   /**

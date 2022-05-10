@@ -117,20 +117,51 @@ const OP_NOP8 = 183
 const OP_NOP9 = 184
 const OP_NOP10 = 185
 
-export function verifyScript (unlockScript, lockScript, tx, vin, parentSatoshis, async = false) {
+const defaults = {
+  async: false,
+  trace: true
+}
+
+export function verifyScript (unlockScript, lockScript, tx, vin, parentSatoshis, opts = {}) {
+  const { async, trace } = {
+    ...defaults,
+    ...opts
+  }
+
+  const chunks = []
+  const stack = []
+  const altStack = []
+  const branchExec = []
+  const stackTrace = []
+  let checkIndex = 0
+  let done = false
+
+  function traceStack (i) {
+    if (trace && i >= 0) stackTrace.push([chunks[i], [...stack], [...altStack]])
+  }
+
+  function finish (error = null) {
+    traceStack(chunks.length - 1)
+    if (!error && branchExec.length) error = new Error('ENDIF missing')
+    const success = !error && stack[stack.length - 1].some(x => x)
+    if (!error && !success) error = new Error('top of stack is false')
+
+    return {
+      success,
+      error,
+      chunks,
+      stack,
+      stackTrace
+    }
+  }
+
   try {
     const unlockChunks = decodeScriptChunks(unlockScript)
     const lockChunks = decodeScriptChunks(lockScript)
 
     if (unlockChunks.some(x => x.opcode && x.opcode > 96)) throw new Error('non-push data in unlock script')
-
-    const chunks = unlockChunks.concat(lockChunks)
-    const log = [] 
-    const stack = []
-    const altStack = []
-    const branchExec = []
-    let checkIndex = 0
-    let done = false
+    chunks.push(...unlockChunks)
+    chunks.push(...lockChunks)
 
     const pop = () => {
       if (!stack.length) throw new Error('stack empty')
@@ -193,6 +224,8 @@ export function verifyScript (unlockScript, lockScript, tx, vin, parentSatoshis,
     let i = 0
 
     function step () {
+      traceStack(i - 1)
+
       // Skip branch
       if (branchExec.length > 0 && !branchExec[branchExec.length - 1]) {
         let sub = 0
@@ -214,9 +247,6 @@ export function verifyScript (unlockScript, lockScript, tx, vin, parentSatoshis,
           return
         }
       }
-
-      // Commit previous change to log
-      if (i > 0) { log.push([chunks[i-1], [...stack]]) }
 
       const chunk = chunks[i++]
 
@@ -537,18 +567,6 @@ export function verifyScript (unlockScript, lockScript, tx, vin, parentSatoshis,
       }
     }
 
-    function finish () {
-      log.push([chunks[chunks.length-1], [...stack]])
-      if (branchExec.length) throw new Error('ENDIF missing')
-      if (!pop().some(x => x)) throw new Error('top of stack is false')
-
-      return {
-        chunks,
-        stack: log[log.length-1][1],
-        log: log,
-      }
-    }
-
     if (async) {
       return (async () => {
         while (i < chunks.length && !done) await step()
@@ -559,11 +577,8 @@ export function verifyScript (unlockScript, lockScript, tx, vin, parentSatoshis,
       return finish()
     }
   } catch (e) {
-    if (async) {
-      return Promise.reject(e)
-    } else {
-      throw e
-    }
+    const vm = finish(e)
+    return async ? Promise.resolve(vm) : vm
   }
 }
 

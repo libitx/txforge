@@ -88,7 +88,7 @@ test('getScript() puts lock script on top of stack', t => {
   const script = toScript(b)
   const { stack } = verifyScript([], script)
 
-  t.deepEqual(stack[stack.length-1], prevOut.script.buffer)
+  t.deepEqual(stack[stack.length-1], Array.from(prevOut.script.buffer))
 })
 
 test('getSatoshis() puts lock satoshis on top of stack', t => {
@@ -145,7 +145,7 @@ test('pushTx() pushes the tx preimage onto the stack', t => {
   const script = toScript(b)
   const { stack } = verifyScript(script, [])
 
-  t.deepEqual(stack[0], Array.from(preimg))
+  t.deepEqual(stack[0], preimg)
 })
 
 test('pushTx() pushes zero bytes placeholder onto the stack without context', t => {
@@ -154,7 +154,7 @@ test('pushTx() pushes zero bytes placeholder onto the stack without context', t 
   const script = toScript(b)
   const { stack } = verifyScript(script, [])
 
-  t.deepEqual(stack[0], new Array(181).fill(0))
+  t.deepEqual(stack[0], new Uint8Array(181).fill(0))
 })
 
 class TestCast extends Cast {

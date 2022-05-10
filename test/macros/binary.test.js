@@ -62,7 +62,7 @@ test('slice() slices bytes from the top of the stack', t => {
 
   // When start has positive index
   for (let args of [[0, 2], [4, 4], [13, 2]]) {
-    const buf = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    const buf = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
     const b = new Tape()
     b.push(buf)
     b.apply(slice, args)
@@ -76,7 +76,7 @@ test('slice() slices bytes from the top of the stack', t => {
 
   // When start has negative index
   for (let args of [[-4, 4], [-13, 2]]) {
-    const buf = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    const buf = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
     const b = new Tape()
     b.push(buf)
     b.apply(slice, args)
@@ -93,7 +93,7 @@ test('trim() trims leading bytes from the top of the stack', t => {
   t.plan(4)
 
   for (let arg of [2, 4, 8, 13]) {
-    const buf = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    const buf = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
     const b = new Tape()
     b.push(buf)
     b.apply(trim, [arg])
@@ -110,7 +110,7 @@ test('trim() trims trailing bytes from the top of the stack', t => {
   t.plan(4)
   
   for (let arg of [-2, -4, -8, -13]) {
-    const buf = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16]
+    const buf = new Uint8Array([1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16])
     const b = new Tape()
     b.push(buf)
     b.apply(trim, [arg])

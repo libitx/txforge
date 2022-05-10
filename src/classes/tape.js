@@ -154,25 +154,27 @@ export function toScript(tape) {
   for (let i = 0; i < tape.cells.length; i++) {
     const cell = tape.cells[i]
 
-    if (Number.isInteger(cell.opcode)) {
+    if (cell.buf?.length) {
+      if (cell.buf.length < 76) {
+        buf.write([cell.buf.length])
+        buf.write(cell.buf)
+      } else if (cell.buf.length < 0x100) {
+        buf.write([76])
+        buf.write(uint8(cell.buf.length))
+        buf.write(cell.buf)
+      } else if (cell.buf.length < 0x10000) {
+        buf.write([77])
+        buf.write(uint16(cell.buf.length))
+        buf.write(cell.buf)
+      } else if (cell.buf.length < 0x100000000) {
+        buf.write([78])
+        buf.write(uint32(cell.buf.length))
+        buf.write(cell.buf)
+      } else {
+        throw new Error('pushdata cannot exceed 4,294,967,296 bytes')
+      }
+    } else if (Number.isInteger(cell.opcode)) {
       buf.write([cell.opcode])
-    } else if (cell.buf.length > 0 && cell.buf.length < 76) {
-      buf.write([cell.buf.length])
-      buf.write(cell.buf)
-    } else if (cell.buf.length < 0x100) {
-      buf.write([76])
-      buf.write(uint8(cell.buf.length))
-      buf.write(cell.buf)
-    } else if (cell.buf.length < 0x10000) {
-      buf.write([77])
-      buf.write(uint16(cell.buf.length))
-      buf.write(cell.buf)
-    } else if (cell.buf.length < 0x100000000) {
-      buf.write([78])
-      buf.write(uint32(cell.buf.length))
-      buf.write(cell.buf)
-    } else {
-      throw new Error('pushdata cannot exceed 4,294,967,296 bytes')
     }
   }
 
