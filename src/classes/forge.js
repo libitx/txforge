@@ -3,7 +3,7 @@ import { isCast } from './cast.js'
 import { P2PKH, Raw } from '../casts/index.js'
 
 const { BufferWriter, Transaction } = nimble.classes
-const { isBuffer, writeVarint } = nimble.functions
+const { writeVarint } = nimble.functions
 
 const defaults = {
   rates: { data: 50, standard: 50 },

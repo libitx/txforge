@@ -1,1 +1,84 @@
-# txforge
+# TxForge
+
+IMG
+BADGES
+
+TxForge is an industrial strength transaction builder. Re-built on top of [nimble](https://github.com/runonbitcoin/nimble), TxForge 2.0 is an ultra-lightweight, ultra-flexible, essential part of any respectable Bitcoin builders' toolkit.
+
+- simple, human-friendly declarative API for composing transactions
+- extendable and flexible - can forge transactions with any script template imaginable
+- under the hood it's powered by nimble, less that 1/5 the size of [moneybutton/bsv v2](https://github.com/moneybutton/bsv) and up to 4 times as fast!
+- a robust library using well-tested, modern javascript
+
+## Upgrading
+
+If you've used previous versions of TxForge, conceptually everything is the same. However, v2.0 is a rewrite from top to bottom, powered by a new Bitcoin library, and incorporates some API changes, most notably with how Casts are defined and used.
+
+Full more details, check out the [TxForge 2 upgrade notes](#todo).
+
+## Quick start
+
+Install TxForge with `npm` or `yarn`:
+
+```shell
+npm install txforge@beta
+# or
+yarn add txforge@beta
+```
+
+Alternatively use in a browser via CDN:
+
+```html
+<script src="https://unpkg.com/@runonbitcoin/nimble"></script>
+<script src="https://unpkg.com/txforge@beta/dist/txforge.min.js"></script>
+
+<!-- or use the bundled version which includes nimble -->
+<script src="https://unpkg.com/txforge@beta/dist/txforge.bundled.min.js"></script>
+```
+
+Grab your tools and put on your safety googles. Lets forge a transaction... it's hammer time!
+
+```js
+import { forgeTx, createUTXO, casts } from 'txforge'
+
+// We'll use these Casts in our transaction
+const { P2PKH, OpReturn } = casts
+
+// You'll need UTXOs to fund a transaction. Use the `createUTXO` helper to turn
+// your UTXO data into the required objects.
+const utxo = createUTXO({
+  txid,       // utxo transaction id
+  vout,       // utxo output index
+  satoshis,   // utxo amount
+  script      // utxo lock script
+})
+
+// Forge a transaction
+const tx = forgeTx({
+  inputs: [
+    P2PKH.unlock(utxo, { privkey: myPrivateKey })
+  ],
+  outputs: [
+    P2PKH.lock(5000, { address: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq' }),
+    OpReturn.lock(0, { data: ['meta', '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', txid] })
+  ],
+  change: { address: '1Nro9WkpaKm9axmcfPVp79dAJU1Gx7VmMZ' }
+})
+
+// And behold! Forged by the Gods and found by a King - a transaction is born.
+console.log(tx.toHex())
+```
+
+And that's it. Really. One function that returns a fully built and signed transaction, ready to send off to your favourite transaction processor.
+
+But there's more, much more. When you're ready, grab a coffee and dive into the following to discover how TxForge can be used to lock and unlock any combination of script template you can imagine.
+
+- [Understanding Casts](#todo)
+- [Creating custom Casts](#todo)
+- [Building Scripts with TxForge](#todo)
+
+## License
+
+TxForge is open source and released under the [Apache-2 License](https://github.com/libitx/txforge/blob/master/LICENSE).
+
+Copyright (c) 2020-2022 Chronos Labs Ltd.
