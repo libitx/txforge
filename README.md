@@ -1,6 +1,6 @@
 # TxForge
 
-![Industrial strength transaction builder](https://github.com/libitx/txforge/raw/v2/media/poster.jpg)
+![Industrial strength transaction builder](https://raw.githubusercontent.com/libitx/txforge/v2/media/txforge-poster.jpg)
 
 [![npm](https://img.shields.io/npm/v/txforge/beta?color=informational)](https://www.npmjs.com/package/txforge)
 ![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
@@ -13,6 +13,19 @@ TxForge is an industrial strength transaction builder. Re-built on top of [nimbl
 - extendable and flexible - can forge transactions with any script template imaginable
 - under the hood it's powered by nimble, less that 1/5 the size of [moneybutton/bsv v2](https://github.com/moneybutton/bsv) and up to 4 times as fast!
 - a robust library using well-tested, modern javascript
+
+## Sponsors
+
+<p align="center">Supported by:</p>
+<p align="center">
+  <a href="https://coingeek.com" target="_blank" rel="noopener noreferrer">
+    <img src="https://www.chronoslabs.net/img/badges/coingeek.png" width="180" alt="Coingeek">
+  </a>
+</p>
+
+Your sponsorship will help us continue to release and maintain software that Bitcoin businesses and developers depend on.
+
+#### 👉 [Sponsor Chronos Labs' open source work](https://www.chronoslabs.net/sponsor/)
 
 ## Upgrading
 
