@@ -44,13 +44,13 @@ export class P2PK extends Cast {
 }
 
 function validateLock({ pubkey } = {}) {
-  if (!pubkey?.point) {
+  if (!(pubkey && pubkey.point)) {
     throw new Error('P2PK unlock must be created with valid `pubkey`')
   }
 }
 
 function validateUnlock({ privkey } = {}) {
-  if (typeof privkey?.toPublicKey !== 'function') {
+  if (!(privkey && typeof privkey.toPublicKey === 'function')) {
     throw new Error('P2PK unlock must be created with valid `privkey`')
   }
 }

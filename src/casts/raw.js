@@ -26,7 +26,7 @@ export class Raw extends Cast {
       this.params.script = Script.fromString(params.script)
     }
 
-    if (typeof this.params?.script?.toBuffer !== 'function') {
+    if (!(this.params.script && typeof this.params.script.toBuffer === 'function')) {
       throw new Error('Raw cast must be created with valid `script`')
     }
   }

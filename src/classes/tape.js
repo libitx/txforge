@@ -74,7 +74,7 @@ export class Tape {
       return this
     }
 
-    if (typeof data?.toBuffer === 'function') {
+    if (data && typeof data.toBuffer === 'function') {
       return this.push(data.toBuffer())
     }
 
@@ -145,7 +145,7 @@ export class Tape {
  * @returns {nimble.Script}
  */
 export function toScript(tape) {
-  if (!Array.isArray(tape?.cells)) {
+  if (!(tape && Array.isArray(tape.cells))) {
     throw new Error('invalid argument. `toScript()` must be given a Tape instance.')
   }
 
@@ -154,7 +154,7 @@ export function toScript(tape) {
   for (let i = 0; i < tape.cells.length; i++) {
     const cell = tape.cells[i]
 
-    if (cell.buf?.length) {
+    if (cell.buf && cell.buf.length) {
       if (cell.buf.length < 76) {
         buf.write([cell.buf.length])
         buf.write(cell.buf)

@@ -54,13 +54,13 @@ export class P2PKH extends Cast {
 }
 
 function validateLock({ address } = {}) {
-  if (!address?.pubkeyhash) {
+  if (!(address && address.pubkeyhash)) {
     throw new Error('P2PKH lock must be created with valid `address`')
   }
 }
 
 function validateUnlock({ privkey } = {}) {
-  if (typeof privkey?.toPublicKey !== 'function') {
+  if (!(privkey && typeof privkey.toPublicKey === 'function')) {
     throw new Error('P2PKH unlock must be created with valid `privkey`')
   }
 }
