@@ -1,7 +1,11 @@
 # TxForge
 
-IMG
-BADGES
+![Industrial strength transaction builder](https://github.com/libitx/txforge/raw/v2/media/poster.jpg)
+
+[![npm](https://img.shields.io/npm/v/txforge/beta?color=informational)](https://www.npmjs.com/package/txforge)
+![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
+![Build Status](https://img.shields.io/github/workflow/status/libitx/txforge/Node.js%20CI/v2)
+
 
 TxForge is an industrial strength transaction builder. Re-built on top of [nimble](https://github.com/runonbitcoin/nimble), TxForge 2.0 is an ultra-lightweight, ultra-flexible, essential part of any respectable Bitcoin builders' toolkit.
 
