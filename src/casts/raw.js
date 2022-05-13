@@ -32,11 +32,11 @@ export class Raw extends Cast {
   }
 
   lockingScript({ script }) {
-    this.script.push(script)
+    this.script.push(script.chunks)
   }
 
   unlockingScript({ script }) {
-    this.script.push(script)
+    this.script.push(script.chunks)
   }
 }
 

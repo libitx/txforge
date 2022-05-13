@@ -104,9 +104,9 @@ test('forge.changeTo() accepts P2PKH params as sensible default', t => {
 
 test('forge.changeTo() accepts Raw params as sensible default', t => {
   const forge = new Forge()
-  forge.changeTo({ script: '01' })
+  forge.changeTo({ script: 'OP_TRUE' })
   t.true(forge.changeScript instanceof nimble.Script)
-  t.is(forge.changeScript.length, 2)
+  t.is(forge.changeScript.length, 1)
 })
 
 test('forge.changeTo() throws error if invalid cast params given', t => {
@@ -248,11 +248,11 @@ test('createForge() sets given change param as P2PKH script', t => {
 
 test('createForge() sets given change param as Raw script', t => {
   const forge = createForge({
-    change: { script: 'ae' }
+    change: { script: 'OP_TRUE' }
   })
 
   t.true(forge.changeScript instanceof nimble.Script)
-  t.is(forge.changeScript.length, 2)
+  t.is(forge.changeScript.length, 1)
 })
 
 test('createForge() sets given locktime', t => {
