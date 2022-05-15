@@ -1,6 +1,6 @@
 # TxForge
 
-![Modern Bitcoin transaction builder](https://github.com/libitx/txforge/raw/master/media/poster.jpg)
+![Modern Bitcoin transaction builder](https://raw.githubusercontent.com/libitx/txforge/legacy/media/poster.jpg)
 
 [![npm](https://img.shields.io/npm/v/txforge?color=informational)](https://www.npmjs.com/package/txforge)
 ![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
@@ -31,17 +31,17 @@ Your sponsorship will help us continue to release and maintain software that Bit
 Install TxForge with `npm` or `yarn`:
 
 ```shell
-npm install txforge
+npm install txforge@legacy
 # or
-yarn add txforge
+yarn add txforge@legacy
 ```
 
 Alternatively use in a browser via CSN:
 
 ```html
-<script src="https://unpkg.com/txforge/dist/txforge.min.js"></script>
+<script src="https://unpkg.com/txforge@legacy/dist/txforge.min.js"></script>
 <!-- optional: adds casts to TxForge.casts -->
-<script src="https://unpkg.com/txforge/dist/txforge.casts.min.js"></script>
+<script src="https://unpkg.com/txforge@legacy/dist/txforge.casts.min.js"></script>
 ```
 
 TxForge has a peer dependency on **version 2** the `bsv` library which must also be installed in your project.

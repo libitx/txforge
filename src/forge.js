@@ -16,12 +16,12 @@ const defaults = {
   debug: false,
   rates: {
     mine: {
-      data: 0.5,
-      standard: 0.5
+      data: 0.05,
+      standard: 0.05
     },
     relay: {
-      data: 0.25,
-      standard: 0.25
+      data: 0.05,
+      standard: 0.05
     }
   }
 }
@@ -246,9 +246,8 @@ class Forge {
       
       // Unless op_return, ensure dust threshold
       if (!isOpReturn) {
-        const dust = dustThreshold(cast.getSize(), this.options.rates)
-        if (cast.satoshis < dust) {
-          throw new Error(`Cannot create output lesser than dust (${ dust })`)
+        if (cast.satoshis < 1) {
+          throw new Error(`Cannot create zero sat output`)
         }
       }
       this.tx.addTxOut(Bn(cast.satoshis), script)
@@ -271,7 +270,7 @@ class Forge {
         change -= extraFee
       }
 
-      if (change > dustThreshold(changeSize, this.options.rates)) {
+      if (change > 0) {
         this.tx.addTxOut(TxOut.fromProperties(Bn(change), this.changeScript))
       }
     }
@@ -384,13 +383,6 @@ class Forge {
         }, fee)
     }, 0)
   }
-}
-
-// Calculates the dust threshold
-// See: https://github.com/bitcoin-sv/bitcoin-sv/blob/master/src/primitives/transaction.h#L188-L208
-function dustThreshold(lockScriptSize, rates) {
-  const rate = rates.standard || rates.relay.standard
-  return 3 * Math.floor((lockScriptSize + 148) * rate)
 }
 
 // Log the given arguments if debug mode enabled

@@ -266,25 +266,6 @@ describe('Forge#build()', () => {
     assert.match(forge.tx.toHex(), /006a051234567890/)
   })
 
-  it('ensures dust limit based on relay rate', () => {
-    forge.addOutput([
-      { to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 100 },
-    ])
-    assert.throws(_ => forge.build(), 'Cannot create output lesser than dust (135)')
-    forge.outputs[0].satoshis = 135
-    assert.doesNotThrow(_ => forge.build())
-  })
-
-  it('ensures dust limit based on relay rate', () => {
-    forge.options.rates.relay.standard = 0.2
-    forge.addOutput([
-      { to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 100 },
-    ])
-    assert.throws(_ => forge.build(), 'Cannot create output lesser than dust (108)')
-    forge.outputs[0].satoshis = 108
-    assert.doesNotThrow(_ => forge.build())
-  })
-
   it('correctly builds the change output', () => {
     forge.addInput({
       txid: '5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12',
@@ -299,7 +280,7 @@ describe('Forge#build()', () => {
     forge.build()
     assert.lengthOf(forge.tx.txOuts, 2)
     assert.equal(forge.tx.txOuts[0].valueBn.toNumber(), 1000)
-    assert.isAtMost(forge.tx.txOuts[1].valueBn.toNumber(), 900)
+    assert.isAtMost(forge.tx.txOuts[1].valueBn.toNumber(), 984)
   })
 })
 
@@ -342,13 +323,13 @@ describe('Forge#estimateFee()', () => {
   })
 
   it('assumes 1 P2PKH input, event when empty', () => {
-    assert.equal(forge.estimateFee(), 80)
+    assert.equal(forge.estimateFee(), 12)
   })
 
   it('uses specified rates if provided', () => {
     forge.addOutput({ to: '1DBz6V6CmvjZTvfjvWpvvwuM1X7GkRmWEq', satoshis: 50000 })
     forge.addOutput({ data: ['foo', 'bar', 'baz'] })
-    assert.equal(forge.estimateFee(), 109)
+    assert.equal(forge.estimateFee(), 16)
     assert.equal(forge.estimateFee({ standard: 0.50, data: 0.25 }), 103)
     assert.equal(forge.estimateFee({ standard: 0.25, data: 0.25 }), 56)
     assert.equal(forge.estimateFee({ mine: { standard: 0.50, data: 0.25 }}), 103)
