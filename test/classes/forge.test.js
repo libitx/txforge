@@ -1,7 +1,7 @@
 import test from 'ava'
 import fs from 'fs'
 import nimble from '@runonbitcoin/nimble'
-import { Forge, casts, createForge, createUTXO, forgeTx } from '../../src/index.js'
+import { Forge, casts, createForge, toUTXO, forgeTx } from '../../src/index.js'
 
 const path = new URL('../vectors/bip69.json', import.meta.url).pathname
 const bip69 = JSON.parse(fs.readFileSync(path))
@@ -19,8 +19,8 @@ test('forge.inputSum gets sum of all inputs', t => {
   const forge = new Forge()
   t.is(forge.inputSum, 0)
 
-  forge.addInput(P2PK.unlock(createUTXO({ satoshis: 150 }), { privkey }))
-  forge.addInput(P2PK.unlock(createUTXO({ satoshis: 9500 }), { privkey }))
+  forge.addInput(P2PK.unlock(toUTXO({ satoshis: 150 }), { privkey }))
+  forge.addInput(P2PK.unlock(toUTXO({ satoshis: 9500 }), { privkey }))
   t.is(forge.inputSum, 9650)
 })
 
@@ -37,8 +37,8 @@ test('forge.addInput() adds input casts to forge', t => {
   const forge = new Forge()
   t.is(forge.inputs.length, 0)
 
-  forge.addInput(P2PK.unlock(createUTXO(), { privkey }))
-  forge.addInput(P2PK.unlock(createUTXO(), { privkey }))
+  forge.addInput(P2PK.unlock(toUTXO(), { privkey }))
+  forge.addInput(P2PK.unlock(toUTXO(), { privkey }))
   t.is(forge.inputs.length, 2)
 })
 
@@ -47,8 +47,8 @@ test('forge.addInput() accepts array of casts', t => {
   t.is(forge.inputs.length, 0)
 
   forge.addInput([
-    P2PK.unlock(createUTXO(), { privkey }),
-    P2PK.unlock(createUTXO(), { privkey })
+    P2PK.unlock(toUTXO(), { privkey }),
+    P2PK.unlock(toUTXO(), { privkey })
   ])
   t.is(forge.inputs.length, 2)
 })
@@ -84,7 +84,7 @@ test('forge.addOutput() throws if invalid value given', t => {
   const forge = new Forge()
   
   t.throws(() => forge.addOutput('not a cast'))
-  t.throws(() => forge.addOutput(P2PK.unlock(createUTXO(), { privkey })))
+  t.throws(() => forge.addOutput(P2PK.unlock(toUTXO(), { privkey })))
 })
 
 test('forge.changeTo() sets changeScript to any given class and params', t => {
@@ -123,7 +123,7 @@ function assertBetween(val, min, max) {
 test('forge.calcRequiredFee() calculates the required fee for the tx', t => {
   const forge = new Forge({
     inputs: [
-      P2PK.unlock(createUTXO({...utxo, satoshis: 10000, script: '01'}), { privkey })
+      P2PK.unlock(toUTXO({...utxo, satoshis: 10000, script: '01'}), { privkey })
     ],
     outputs: [
       P2PK.lock(5000, { pubkey }),
@@ -153,7 +153,7 @@ test('forge.calcRequiredFee() calculates data scripts separately', t => {
 test('forge.sort() sorts inputs as per bip69', t => {
   for (let v of bip69.inputs) {
     const inputs = v.inputs.map(i => {
-      const utxo = createUTXO({ txid: i.txId, vout: i.vout })
+      const utxo = toUTXO({ txid: i.txId, vout: i.vout })
       return P2PK.unlock(utxo, { privkey })
     })
 
@@ -178,7 +178,7 @@ test('forge.sort() sorts outputs as per bip69', t => {
 test('forge.toTx() returns signed tx', t => {
   const forge = new Forge({
     inputs: [
-      P2PK.unlock(createUTXO({...utxo, satoshis: 10000, script: '01'}), { privkey })
+      P2PK.unlock(toUTXO({...utxo, satoshis: 10000, script: '01'}), { privkey })
     ],
     outputs: [
       P2PK.lock(5000, { pubkey }),
@@ -195,7 +195,7 @@ test('forge.toTx() returns signed tx', t => {
 test('forge.toTx() returns signed tx with change', t => {
   const forge = new Forge({
     inputs: [
-      P2PK.unlock(createUTXO({...utxo, satoshis: 10000, script: '01'}), { privkey })
+      P2PK.unlock(toUTXO({...utxo, satoshis: 10000, script: '01'}), { privkey })
     ],
     outputs: [
       P2PK.lock(5000, { pubkey }),
@@ -213,8 +213,8 @@ test('forge.toTx() returns signed tx with change', t => {
 test('createForge() sets given inputs and outputs', t => {
   const forge = createForge({
     inputs: [
-      P2PKH.unlock(createUTXO(), { privkey }),
-      P2PK.unlock(createUTXO(), { privkey })
+      P2PKH.unlock(toUTXO(), { privkey }),
+      P2PK.unlock(toUTXO(), { privkey })
     ],
     outputs: [
       P2PKH.lock(10000, { address }),
@@ -277,8 +277,8 @@ test('forgeTx() returns a built transaction', t => {
   const txid = '0000000000000000000000000000000000000000000000000000000000000000'
   const tx = forgeTx({
     inputs: [
-      P2PKH.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
-      P2PK.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey })
+      P2PKH.unlock(toUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
+      P2PK.unlock(toUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey })
     ],
     outputs: [
       P2PKH.lock(10000, { address }),
@@ -295,7 +295,7 @@ test('forgeTx() sets change on the tx', t => {
   const txid = '0000000000000000000000000000000000000000000000000000000000000000'
   const tx = forgeTx({
     inputs: [
-      P2PKH.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
+      P2PKH.unlock(toUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
     ],
     outputs: [
       P2PKH.lock(1000, { address }),
@@ -319,7 +319,7 @@ test('forgeTx() uses given rates', t => {
   const txid = '0000000000000000000000000000000000000000000000000000000000000000'
   const tx = forgeTx({
     inputs: [
-      P2PKH.unlock(createUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
+      P2PKH.unlock(toUTXO({ txid, vout: 0, satoshis: 10000, script: '006a' }), { privkey }),
     ],
     outputs: [
       OpReturn.lock(0, { data: new Array(1000).fill(0) }),

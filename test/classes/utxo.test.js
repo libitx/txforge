@@ -1,10 +1,10 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { createUTXO, getUTXO, forgeTx, casts} from '../../src/index.js'
+import { toUTXO, getUTXO, forgeTx, casts} from '../../src/index.js'
 
 const { Transaction, Script } = nimble.classes
 
-test('createUTXO() accepts Mattercloud api params', t => {
+test('toUTXO() accepts Mattercloud api params', t => {
   const params = {
     "address": "12XXBHkRNrBEb7GCvAP4G8oUs5SoDREkVX",
     "txid": "5e3014372338f079f005eedc85359e4d96b8440e7dbeb8c35c4182e0c19a1a12",
@@ -19,7 +19,7 @@ test('createUTXO() accepts Mattercloud api params', t => {
     "outputIndex": 0
   }
 
-  const utxo = createUTXO(params)
+  const utxo = toUTXO(params)
   t.is(utxo.txid, params.txid)
   t.is(utxo.vout, params.vout)
   t.is(utxo.satoshis, params.satoshis)
@@ -27,7 +27,7 @@ test('createUTXO() accepts Mattercloud api params', t => {
   t.true(utxo.output instanceof Transaction.Output)
 })
 
-test('createUTXO() accepts WOC api params', t => {
+test('toUTXO() accepts WOC api params', t => {
   const params = {
     "height": 578325,
     "tx_pos": 0,
@@ -35,7 +35,7 @@ test('createUTXO() accepts WOC api params', t => {
     "value": 1250020815
   }
 
-  const utxo = createUTXO(params)
+  const utxo = toUTXO(params)
   t.is(utxo.txid, params.tx_hash)
   t.is(utxo.vout, params.tx_pos)
   t.is(utxo.satoshis, params.value)

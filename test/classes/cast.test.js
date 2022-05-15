@@ -1,6 +1,6 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { Cast, isCast, createUTXO } from '../../src/index.js'
+import { Cast, isCast, toUTXO } from '../../src/index.js'
 
 const { Transaction, Script } = nimble.classes
 const { opcodes } = nimble.constants
@@ -29,7 +29,7 @@ test('Cast#lock() creates a locking Cast', t => {
 })
 
 test('Cast#unlock() creates an unlocking Cast', t => {
-  const utxo = createUTXO({
+  const utxo = toUTXO({
     txid: '0000000000000000000000000000000000000000000000000000000000000000',
     vout: 0
   })
@@ -66,7 +66,7 @@ test('Cast#toOutput() returns the Output', t => {
 })
 
 test('Cast#toOutput() throws if unlocking cast', t => {
-  const utxo = createUTXO({
+  const utxo = toUTXO({
     txid: '0000000000000000000000000000000000000000000000000000000000000000',
     vout: 0
   })
@@ -75,7 +75,7 @@ test('Cast#toOutput() throws if unlocking cast', t => {
 })
 
 test('Cast#toInput() returns the Output', t => {
-  const utxo = createUTXO({
+  const utxo = toUTXO({
     txid: '0000000000000000000000000000000000000000000000000000000000000000',
     vout: 0
   })

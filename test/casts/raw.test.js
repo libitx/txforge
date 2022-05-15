@@ -1,11 +1,11 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { casts, createUTXO } from '../../src/index.js'
+import { casts, toUTXO } from '../../src/index.js'
 
 const { Raw } = casts
 const lockScript = nimble.Script.fromHex('76a914a58621fd80c3abcf4f81d343f6a78dc891082d6688ac')
 const unlockScript = nimble.Script.fromHex('47304402205832ed8192e83d640824c021107024f9f03adf1fcc9bca826025ab1ce9f012b9022005d71b00d40023a6bb8a2644f7f599bf367850a1ec5ddc95882c9841a1867c6a412102554669f32b842ec626175d3b5380a335213506d55aa896f04d66d9f46f48cf18')
-const utxo = createUTXO({
+const utxo = toUTXO({
   txid: '0000000000000000000000000000000000000000000000000000000000000000',
   vout: 0
 })

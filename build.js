@@ -1,5 +1,4 @@
 import esbuild from 'esbuild'
-import glob from 'glob'
 import GlobalsPlugin from 'esbuild-plugin-globals'
 
 const makeAllPackagesExternalPlugin = {

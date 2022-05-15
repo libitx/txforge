@@ -31,7 +31,7 @@ Your sponsorship will help us continue to release and maintain software that Bit
 
 If you've used previous versions of TxForge, conceptually everything is the same. However, v2.0 is a rewrite from top to bottom, powered by a new Bitcoin library, and incorporates some API changes, most notably with how Casts are defined and used.
 
-Full more details, check out the [TxForge 2 upgrade notes](#todo).
+Full more details, check out the [TxForge 2 upgrade notes](https://github.com/libitx/txforge/wiki/Installing-and-upgrading-TxForge#txforge-2-upgrade-notes).
 
 ## Quick start
 
@@ -56,14 +56,14 @@ Alternatively use in a browser via CDN:
 Grab your tools and put on your safety googles. Lets forge a transaction... it's hammer time!
 
 ```js
-import { forgeTx, createUTXO, casts } from 'txforge'
+import { forgeTx, toUTXO, casts } from 'txforge'
 
 // We'll use these Casts in our transaction
 const { P2PKH, OpReturn } = casts
 
-// You'll need UTXOs to fund a transaction. Use the `createUTXO` helper to turn
+// You'll need UTXOs to fund a transaction. Use the `toUTXO` helper to turn
 // your UTXO data into the required objects.
-const utxo = createUTXO({
+const utxo = toUTXO({
   txid,       // utxo transaction id
   vout,       // utxo output index
   satoshis,   // utxo amount
@@ -90,9 +90,9 @@ And that's it. Really. One function that returns a fully built and signed transa
 
 But there's more, much more. When you're ready, grab a coffee and dive into the following to discover how TxForge can be used to lock and unlock any combination of script template you can imagine.
 
-- [Understanding Casts](#todo)
-- [Creating custom Casts](#todo)
-- [Building Scripts with TxForge](#todo)
+- [Understanding Casts](https://github.com/libitx/txforge/wiki/Understanding-Casts)
+- [Creating custom Casts](https://github.com/libitx/txforge/wiki/Creating-custom-Casts)
+- [Building Scripts with TxForge](https://github.com/libitx/txforge/wiki/Building-scripts-with-the-Tape-API)
 
 ## License
 

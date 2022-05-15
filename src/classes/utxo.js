@@ -10,7 +10,7 @@ const { isHex } = nimble.functions
  * Unlocking Casts spend UTXOs so it is usually required to prepare UTXO
  * instances using data from your UTXO database or api.
  * 
- * See {@link createUTXO}.
+ * See {@link toUTXO}.
  */
 export class UTXO {
   constructor({ txid, vout, satoshis, script } = {}) {
@@ -42,7 +42,7 @@ export class UTXO {
  * @param {number?} params.tx_pos Previous output index
  * @returns {UTXO}
  */
-export function createUTXO({ script, ...params } = {}) {
+export function toUTXO({ script, ...params } = {}) {
   const txid = getOpt(params, ['txid', 'tx_hash'])
   const vout = getOpt(params, ['vout', 'outputIndex', 'tx_pos'])
   const satoshis = getOpt(params, ['satoshis', 'value'])

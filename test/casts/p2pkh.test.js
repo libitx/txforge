@@ -1,11 +1,11 @@
 import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
-import { casts, createUTXO } from '../../src/index.js'
+import { casts, toUTXO } from '../../src/index.js'
 
 const { P2PKH } = casts
 const privkey = nimble.PrivateKey.fromRandom()
 const address = privkey.toPublicKey().toAddress()
-const utxo = createUTXO({
+const utxo = toUTXO({
   txid: '0000000000000000000000000000000000000000000000000000000000000000',
   vout: 0
 })
