@@ -13,6 +13,8 @@ TxForge is a modern Bitcoin transaction builder, built on top of [bsv2](https://
 * Build for future Bitcoin and future JavaScript. Built on top of `bsv2` and with ES modules.
 * A robust library with solidly tested codebase.
 
+**This is the legacy version of TxForge. Version 2, powered by [nimble](https://github.com/runonbitcoin/nimble), can be found on the [master branch](https://github.com/libitx/txforge/tree/master).**
+
 ## Sponsors
 
 <p align="center">Supported by:</p>
