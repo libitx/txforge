@@ -1,6 +1,6 @@
 # TxForge
 
-![Industrial strength transaction builder](https://raw.githubusercontent.com/libitx/txforge/v2/media/txforge-poster.jpg)
+![Industrial strength transaction builder](https://raw.githubusercontent.com/libitx/txforge/master/media/txforge-poster.jpg)
 
 [![npm](https://img.shields.io/npm/v/txforge?color=informational)](https://www.npmjs.com/package/txforge)
 ![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
