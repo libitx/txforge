@@ -2,7 +2,7 @@
 
 ![Industrial strength transaction builder](https://raw.githubusercontent.com/libitx/txforge/v2/media/txforge-poster.jpg)
 
-[![npm](https://img.shields.io/npm/v/txforge/beta?color=informational)](https://www.npmjs.com/package/txforge)
+[![npm](https://img.shields.io/npm/v/txforge?color=informational)](https://www.npmjs.com/package/txforge)
 ![License](https://img.shields.io/github/license/libitx/txforge?color=informational)
 ![Build Status](https://img.shields.io/github/workflow/status/libitx/txforge/Node.js%20CI/v2)
 
@@ -13,6 +13,8 @@ TxForge is an industrial strength transaction builder. Re-built on top of [nimbl
 - extendable and flexible - can forge transactions with any script template imaginable
 - under the hood it's powered by nimble, less that 1/5 the size of [moneybutton/bsv v2](https://github.com/moneybutton/bsv) and up to 4 times as fast!
 - a robust library using well-tested, modern javascript
+
+*The legacy version of TxForge, powered by [bsv v2](https://github.com/moneybutton/bsv), can be found on the [legacy branch](https://github.com/libitx/txforge/tree/legacy).*
 
 ## Sponsors
 
@@ -38,19 +40,19 @@ Full more details, check out the [TxForge 2 upgrade notes](https://github.com/li
 Install TxForge with `npm` or `yarn`:
 
 ```shell
-npm install txforge@beta
+npm install txforge
 # or
-yarn add txforge@beta
+yarn add txforge
 ```
 
 Alternatively use in a browser via CDN:
 
 ```html
 <script src="https://unpkg.com/@runonbitcoin/nimble"></script>
-<script src="https://unpkg.com/txforge@beta/dist/txforge.min.js"></script>
+<script src="https://unpkg.com/txforge/dist/txforge.min.js"></script>
 
 <!-- or use the bundled version which includes nimble -->
-<script src="https://unpkg.com/txforge@beta/dist/txforge.bundled.min.js"></script>
+<script src="https://unpkg.com/txforge/dist/txforge.bundled.min.js"></script>
 ```
 
 Grab your tools and put on your safety googles. Lets forge a transaction... it's hammer time!
