@@ -3,10 +3,9 @@ import nimble from '@runonbitcoin/nimble'
 import { Tape, toScript } from '../../src/classes/tape.js'
 import { num } from '../../src/helpers/index.js'
 import { getVarint, readVarint, trimVarint } from '../../src/macros/index.js'
-import { verifyScript } from '../../src/extra/verify-script.js'
 
 const { BufferWriter } = nimble.classes
-const { writeVarint } = nimble.functions
+const { evalScript, writeVarint } = nimble.functions
 
 test('getVarint() gets the varint from the top stack element and puts on top', t => {
   for (let bytes of [32, 320, 320000]) {
@@ -18,7 +17,7 @@ test('getVarint() gets the varint from the top stack element and puts on top', t
     b.push(buf).apply(getVarint)
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     const expected = [buf.toBuffer(), num(bytes)]
     t.deepEqual(stack, expected)
@@ -36,7 +35,7 @@ test('readVarint() reads the varint from the top stack item and puts the encoded
     b.push(buf).apply(readVarint)
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     const expected = [new Uint8Array([1, 2, 3, 4]), data]
     t.deepEqual(stack, expected)
@@ -53,7 +52,7 @@ test('trimVarint() trims the varint from the leading bytes of the top stack item
     b.push(buf).apply(trimVarint)
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     const expected = [data]
     t.deepEqual(stack, expected)

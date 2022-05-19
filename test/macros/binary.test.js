@@ -2,9 +2,8 @@ import test from 'ava'
 import nimble from '@runonbitcoin/nimble'
 import { Tape, toScript } from '../../src/classes/tape.js'
 import { decodeUint, reverse, slice, trim } from '../../src/macros/index.js'
-import { verifyScript } from '../../src/extra/verify-script.js'
 
-const { generateRandomData } = nimble.functions
+const { evalScript, generateRandomData } = nimble.functions
 
 test('decodeUint() casts the top stack element to a script number', t => {
   function uintBuf(len, cb) {
@@ -26,7 +25,7 @@ test('decodeUint() casts the top stack element to a script number', t => {
   })
 
   const script = toScript(b)
-  const { stack } = verifyScript([], script)
+  const { stack } = evalScript([], script)
 
   const expected = [[24], [24], [0, 40, 107, 238, 0]]
   t.deepEqual(stack, expected)
@@ -51,7 +50,7 @@ test('reverse() reverses the data on top of the stack', t => {
     b.apply(reverse, [buf.length])
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     t.deepEqual(stack[0], buf.reverse())
   }
@@ -68,7 +67,7 @@ test('slice() slices bytes from the top of the stack', t => {
     b.apply(slice, args)
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     const expected = buf.slice(args[0], args[0] + args[1])
     t.deepEqual(stack[0], expected)
@@ -82,7 +81,7 @@ test('slice() slices bytes from the top of the stack', t => {
     b.apply(slice, args)
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     const expected = buf.slice(buf.length + args[0], buf.length + args[0] + args[1])
     t.deepEqual(stack[0], expected)
@@ -99,7 +98,7 @@ test('trim() trims leading bytes from the top of the stack', t => {
     b.apply(trim, [arg])
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     const expected = buf.slice(arg)
     t.deepEqual(stack[0], expected)
@@ -116,7 +115,7 @@ test('trim() trims trailing bytes from the top of the stack', t => {
     b.apply(trim, [arg])
 
     const script = toScript(b)
-    const { stack } = verifyScript([], script)
+    const { stack } = evalScript([], script)
 
     const expected = buf.slice(0, buf.length+arg)
     t.deepEqual(stack[0], expected)
