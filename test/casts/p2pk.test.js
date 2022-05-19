@@ -42,10 +42,13 @@ test('P2PK.unlock() throws if arguments invalid', t => {
 })
 
 test('P2PK.simulate() evaluates as valid if signed with correct key', t => {
-  t.true(P2PK.simulate({ pubkey }, { privkey }))
+  const vm = P2PK.simulate({ pubkey }, { privkey })
+  t.true(vm.success)
 })
 
 test('P2PK.simulate() evaluates as invalid if signed with incorrect key', t => {
   const wrongKey = nimble.PrivateKey.fromRandom()
-  t.throws(() => P2PK.simulate({ pubkey }, { privkey: wrongKey }))
+  const vm = P2PK.simulate({ pubkey }, { privkey: wrongKey })
+  t.false(vm.success)
+  t.truthy(vm.error)
 })

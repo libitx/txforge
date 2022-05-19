@@ -176,19 +176,22 @@ class TestCast extends Cast {
 }
 
 test('TestCast simulates full check tx', t => {
-  t.true(TestCast.simulate())
+  const vm = TestCast.simulate()
+  t.true(vm.success)
 })
 
 test('TestCast simulates full check tx verify', t => {
-  t.true(TestCast.simulate({ verify: true }))
+  const vm = TestCast.simulate({ verify: true })
+  t.true(vm.success)
 })
 
 test('TestCast simulates optimal check tx verify', t => {
-  t.true(TestCast.simulate({ optimized: true }))
+  const vm = TestCast.simulate({ optimized: true })
+  t.true(vm.success)
 })
 
 test('TestCast optimal check has 50% chance of not working', t => {
-  t.throws(_ => {
-    TestCast.simulate({ optimized: true, extraBytes: true })
-  })
+  const vm = TestCast.simulate({ optimized: true, extraBytes: true })
+  t.false(vm.success)
+  t.truthy(vm.error)
 })

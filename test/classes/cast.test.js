@@ -40,15 +40,19 @@ test('Cast#unlock() creates an unlocking Cast', t => {
   t.is(cast.utxo.vout, 0)
 })
 
-test('Cast#simulate() returns true with valid params', t => {
-  const bool = HashPuzzle.simulate({ secret }, { secret })
-  t.true(bool)
+test('Cast#simulate() returns vm with valid params', t => {
+  const vm = HashPuzzle.simulate({ secret }, { secret })
+  t.true(vm.success)
+  t.is(vm.error, null)
+  t.true(Array.isArray(vm.chunks))
+  t.true(Array.isArray(vm.stack))
+  t.true(Array.isArray(vm.stackTrace))
 })
 
-test('Cast#simulate() throws error with unvalid params', t => {
-  t.throws(_ => {
-    HashPuzzle.simulate({ secret }, { secret: 'incorrect' })
-  })
+test('Cast#simulate() returns vm with unvalid params', t => {
+  const vm = HashPuzzle.simulate({ secret }, { secret: 'incorrect' })
+  t.false(vm.success)
+  t.true(vm.error instanceof Error)
 })
 
 test('Cast#toScript() returns the script', t => {

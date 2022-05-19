@@ -44,14 +44,19 @@ test('P2MS.unlock() throws if arguments invalid', t => {
 })
 
 test('P2MS.simulate() evaluates as valid if signed with threshold of keys', t => {
-  t.true(P2MS.simulate({ pubkeys, threshold: 2 }, { privkeys }))
+  const vm = P2MS.simulate({ pubkeys, threshold: 2 }, { privkeys })
+  t.true(vm.success)
 })
 
 test('P2MS.simulate() evaluates as invalid if signed with insufficient threshold of keys', t => {
-  t.throws(() => P2MS.simulate({ pubkeys, threshold: 2 }, { privkeys: [privkeys[0]] }))
+  const vm = P2MS.simulate({ pubkeys, threshold: 2 }, { privkeys: [privkeys[0]] })
+  t.false(vm.success)
+  t.truthy(vm.error)
 })
 
 test('P2MS.simulate() evaluates as invalid if signed with incorrect of keys', t => {
   const wrongKeys = new Array(2).fill(0).map(_ => nimble.PrivateKey.fromRandom())
-  t.throws(() => P2MS.simulate({ pubkeys, threshold: 2 }, { privkeys: wrongKeys }))
+  const vm = P2MS.simulate({ pubkeys, threshold: 2 }, { privkeys: wrongKeys })
+  t.false(vm.success)
+  t.truthy(vm.error)
 })

@@ -46,10 +46,13 @@ test('P2PKH.unlock() throws if arguments invalid', t => {
 })
 
 test('P2PKH.simulate() evaluates as valid if signed with correct key', t => {
-  t.true(P2PKH.simulate({ address }, { privkey }))
+  const vm = P2PKH.simulate({ address }, { privkey })
+  t.true(vm.success)
 })
 
 test('P2PKH.simulate() throws when signed with incorrect key', t => {
   const wrongKey = nimble.PrivateKey.fromRandom()
-  t.throws(() => P2PKH.simulate({ address }, { privkey: wrongKey }))
+  const vm = P2PKH.simulate({ address }, { privkey: wrongKey })
+  t.false(vm.success)
+  t.truthy(vm.error)
 })

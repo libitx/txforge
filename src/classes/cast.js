@@ -5,7 +5,7 @@ import { getUTXO } from './utxo.js'
 import { getOpt } from './shared.js'
 
 const { Transaction } = nimble.classes
-const { verifyScript } = nimble.functions
+const { evalScript } = nimble.functions
 
 /**
  * Casts are Bitcoin script templates.
@@ -124,11 +124,12 @@ export class Cast {
   }
 
   /**
-   * Simulates the Cast using the given lock and unlock parameters. Returns true
-   * or throws an error.
+   * Simulates the Cast using the given lock and unlock parameters. Returns a
+   * `vm` object from nimble's `evalScript` function.
    * 
    * @param {object} params Lock parameters
    * @param {object} params Unlock parameters
+   * @returns {object} evalScript vm object
    */
   static simulate(lockParams = {}, unlockParams = {}) {
     const lockTx = forgeTx({
@@ -141,15 +142,13 @@ export class Cast {
       inputs: [this.unlock(utxo, unlockParams)]
     })
 
-    verifyScript(
+    return evalScript(
       tx.inputs[0].script,
       lockTx.outputs[0].script,
       tx,
       0,
       lockTx.outputs[0].satoshis,
     )
-
-    return true
   }
 
   /**

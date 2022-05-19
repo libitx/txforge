@@ -61,8 +61,8 @@ __metadata:
 
 "@runonbitcoin/nimble@runonbitcoin/nimble#eval-script":
   version: 1.0.12
-  resolution: "@runonbitcoin/nimble@https://github.com/runonbitcoin/nimble.git#commit=bc8effebb9013f7b412804681b20e08fb21eace8"
-  checksum: d0c12c51de0b63c9515ab00299a24fed5c8289cf9aa1372d09bfb3a449062f6041868da1ed12281590894d3c3de42e07749be2fb33dde7dd998671567a01bb5a
+  resolution: "@runonbitcoin/nimble@https://github.com/runonbitcoin/nimble.git#commit=1d67377c319fcc70edfcac862049b57db8a5b4e6"
+  checksum: c82d13e0af135e8bb3ddf54bb3ef356c93aca0c564434899f0339bdb7e7bab27bf78593a717cd8fc15ffff8817a1661af503ba6434e1cbd58378bf53728e88f2
   languageName: node
   linkType: hard
 

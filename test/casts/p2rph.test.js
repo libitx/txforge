@@ -69,11 +69,15 @@ test('P2RPH.unlock() throws if arguments invalid', t => {
 })
 
 test('P2RPH.simulate() evaluates as valid with correct K', t => {
-  t.true(P2RPH.simulate({ r }, { k, privkey }))
-  t.true(P2RPH.simulate({ r }, { k }))
+  const vm1 = P2RPH.simulate({ r }, { k, privkey })
+  const vm2 = P2RPH.simulate({ r }, { k })
+  t.true(vm1.success)
+  t.true(vm2.success)
 })
 
 test('P2RPH.simulate() evaluates as invalid with incorrect K', t => {
   const wrongK = generateK()
-  t.throws(() => P2RPH.simulate({ r }, { k: wrongK }))
+  const vm = P2RPH.simulate({ r }, { k: wrongK })
+  t.false(vm.success)
+  t.truthy(vm.error)
 })
