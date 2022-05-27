@@ -1,6 +1,6 @@
 {
   "name": "txforge",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Modern Bitcoin transaction builder, capable of supporting any non-standard and custom script type.",
   "keywords": [
     "bitcoin",
@@ -37,7 +37,7 @@
     "test": "ava test/**/*.test.js"
   },
   "dependencies": {
-    "@runonbitcoin/nimble": "runonbitcoin/nimble#eval-script"
+    "@runonbitcoin/nimble": "^1.0.13"
   },
   "devDependencies": {
     "ava": "^4.2.0",
